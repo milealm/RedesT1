@@ -99,8 +99,9 @@ void analise_pacote (int socket){
 
 void receber_pacote(int socket){
     unsigned char *pacote_recebido = (unsigned char *)malloc(PACOTE_MAX);
-    struct kermit_protocol *pacoteMontado = new(struct kermit_protocol); 
+    struct kermit_protocol *pacoteMontado = new(struct kermit_protocol);
     ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
+    printf("byte_recebidos: %ld\n",byes_recebidos);
     if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
         perror ("Erro ao receber mensagem");
     }
@@ -131,16 +132,17 @@ int main(int argc, char *argv[]){
     }
     strcpy(device2, temp_device2);
 
-    if (argv[1] == "servidor"){
+    if (argc > 1 && strcmp(argv[1], "servidor") == 0){
+        int socketServer = cria_raw_socket(device1);
         while (1){
-            int socketServer = cria_raw_socket(device1);
             receber_pacote(socketServer);
             close(socketServer);
         }
     }
-    if (argv[1] == "cliente"){
+    if (argc > 1 && strcmp(argv[1], "cliente") == 0){
+        printf ("bbbb\n");
+        int socketClient = cria_raw_socket(device2);
         while(1){
-            int socketClient = cria_raw_socket(device2);
             analise_pacote(socketClient); //por aqui eu envio
             close(socketClient);
         }
