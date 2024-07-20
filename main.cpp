@@ -1,6 +1,8 @@
 #include <iostream>
+#include <unistd.h> 
 #include <fstream>
 #include <list>
+#include <string>
 #include <cstring>
 #include <sys/socket.h>
 #include <arpa/inet.h> // Para htons
@@ -58,16 +60,16 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     //dados
     pacote->dados = new unsigned char[bytesLidos];
     memcpy(pacote->dados, dadosArquivo, bytesLidos);
-    //crc
+    //crc INCOMPLETO
     pacote->crc = htons(static_cast<unsigned int>(0));
 
     ssize_t status = send(socket,pacote,(sizeof(pacote) + bytesLidos),0);
-    if (status = -1){
+    if (status == (-1)){
         perror("Erro ao anviar pacote\n");
-        exit -1;
+        exit (-1);
     }
     else{
-        printf ("pacotes: %d\n",status);
+        printf ("pacotes: %ld\n",status);
     }
 
     delete[] pacote->dados;
@@ -96,22 +98,52 @@ void analise_pacote (int socket){
 }
 
 void receber_pacote(int socket){
-    unsigned char *pacote_recebido;
-    recv(socket,pacote_recebido, PACOTE_MAX,0);
+    unsigned char *pacote_recebido = (unsigned char *)malloc(PACOTE_MAX);
+    struct kermit_protocol *pacoteMontado = new(struct kermit_protocol); 
+    ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
+    if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
+        perror ("Erro ao receber mensagem");
+    }
+    else{
+        char marcador_de_inicio = pacote_recebido[0]; //pegando primeiros 8 bits/byte do pacote, que deve ser o marcador_de_inicio
+        int numInicio = static_cast<int>(marcador_de_inicio);
+
+    printf ("acabou porque eu não sei se esta dando certo");
+    }
+
     //agora eu tenho que decompor esse pacote para ver o que eu faço;
 }
 
 int main(int argc, char *argv[]){
-    char *device = "enp1s0";
+    const char* temp_device1 = "enp1s0";
+    char* device1 = (char*)malloc(strlen(temp_device1) + 1); // +1 para o terminador nulo
+    if (device1 == NULL) {
+        fprintf(stderr, "Erro ao alocar memória\n");
+        return 1;
+    }
+    strcpy(device1, temp_device1);
+
+    const char* temp_device2 = "enp1s0";
+    char* device2 = (char*)malloc(strlen(temp_device2) + 1); // +1 para o terminador nulo
+    if (device2 == NULL) {
+        fprintf(stderr, "Erro ao alocar memória\n");
+        return 1;
+    }
+    strcpy(device2, temp_device2);
 
     if (argv[1] == "servidor"){
-        int socketServer = cria_raw_socket(device);
-        receber_pacote(socketServer);
+        while (1){
+            int socketServer = cria_raw_socket(device1);
+            receber_pacote(socketServer);
+            close(socketServer);
+        }
     }
     if (argv[1] == "cliente"){
-        int socketClient = cria_raw_socket(device);
-        analise_pacote(socketClient);
-        close(socketClient);
+        while(1){
+            int socketClient = cria_raw_socket(device2);
+            analise_pacote(socketClient); //por aqui eu envio
+            close(socketClient);
+        }
 
     }
 
