@@ -14,7 +14,6 @@
 //função para configurar raw socket em modo promíscuo para uma interface de rede 
 int cria_raw_socket(char *nome_interface_rede) { //"ip addr" listar todas as interfaces de rede de um sistema linux
     // Cria arquivo para o socket sem qualquer protocolo
-    printf ("vou criar o rawsocket\n");
     int soquete = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (soquete == -1) {
         fprintf(stderr, "Erro ao criar socket: Verifique se você é root!\n");

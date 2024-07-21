@@ -83,8 +83,8 @@ void analise_pacote (int socket){
     file.seekg(0, std::ios::end);
     std::streampos pos = file.tellg();
     int bytesLidos = static_cast<int>(pos);
-    
-    if (bytesLidos < 64){
+    printf ("bytesLidos:%d\n",bytesLidos);
+    if (bytesLidos > 64){
         fragmentar_pacote(file,bytesLidos);
     }
     else{
@@ -103,20 +103,20 @@ void receber_pacote(int socket){
     ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
     printf("byte_recebidos: %ld\n",byes_recebidos);
     if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
-        perror ("Erro ao receber mensagem");
+        perror ("Erro ao receber mensagem\n");
     }
     else{
         char marcador_de_inicio = pacote_recebido[0]; //pegando primeiros 8 bits/byte do pacote, que deve ser o marcador_de_inicio
         int numInicio = static_cast<int>(marcador_de_inicio);
 
-    printf ("acabou porque eu não sei se esta dando certo");
+    printf ("acabou porque eu não sei se esta dando certo\n");
     }
 
     //agora eu tenho que decompor esse pacote para ver o que eu faço;
 }
 
 int main(int argc, char *argv[]){
-    const char* temp_device1 = "enp1s0";
+    const char* temp_device1 = "eno1";
     char* device1 = (char*)malloc(strlen(temp_device1) + 1); // +1 para o terminador nulo
     if (device1 == NULL) {
         fprintf(stderr, "Erro ao alocar memória\n");
@@ -131,22 +131,42 @@ int main(int argc, char *argv[]){
         return 1;
     }
     strcpy(device2, temp_device2);
-
+    int option = 0;
     if (argc > 1 && strcmp(argv[1], "servidor") == 0){
         int socketServer = cria_raw_socket(device1);
         while (1){
-            receber_pacote(socketServer);
-            close(socketServer);
+            printf ("Você tem as seguintes opções: 1.Nada 2.Receber 3.Enviar\n");
+            scanf ("\n%d",&option);
+            switch (option){
+            case 1:
+                printf ("ue\n");
+                break;
+            case 2:
+                receber_pacote(socketServer);
+                break;
+            case 3:
+                analise_pacote(socketServer);
+            }
         }
+        close(socketServer);
     }
     if (argc > 1 && strcmp(argv[1], "cliente") == 0){
-        printf ("bbbb\n");
         int socketClient = cria_raw_socket(device2);
         while(1){
-            analise_pacote(socketClient); //por aqui eu envio
-            close(socketClient);
+            printf ("Você tem as seguintes opções: 1.Nada 2.Receber 3.Enviar\n");
+            scanf ("%d",&option);
+            switch (option){
+            case 1:
+                printf ("ue\n");
+                break;
+            case 2:
+                receber_pacote(socketClient);
+                break;
+            case 3:
+                analise_pacote(socketClient);
+            }
         }
-
+        close(socketClient);
     }
 
 }
