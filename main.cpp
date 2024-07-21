@@ -28,7 +28,7 @@ struct kermit_protocol {
     unsigned int tam : 6;        // tamanho do campo dados em bytes
     unsigned int seq : 5;        // numero de sequência
     unsigned int type : 5;       // tipo da mensagem
-    unsigned char *dados;        //dados, tem que ter no máximo 64 bytes 
+    unsigned char dados[63];        //dados, tem que ter no máximo 64 bytes 
     unsigned int crc : 8;        //crc
 };
 
@@ -47,34 +47,33 @@ int codigo_crc(char *dadosArquivo, int bytesLidos){
 }
 
 void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz muito sentido passar o file aqui, deveria ser um buffer
-    struct kermit_protocol *pacote = new (struct kermit_protocol); //aloquei estrutura onde eu vou guardar o meu pacote
-
+    unsigned char buffer[67]; //63 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
+    struct kermit_protocol *pacote = new struct kermit_protocol; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
-    pacote->m_inicio = htons(static_cast<unsigned int>(MARCADOR_DE_INICIO));
+    pacote->m_inicio = MARCADOR_DE_INICIO;
     //tamanho da área de dados
-    pacote->m_inicio = htons(static_cast<unsigned int>(bytesLidos));
+    pacote->tam = bytesLidos;
     //num de sequencia
-    pacote->m_inicio = htons(static_cast<unsigned int>(0));
+    pacote->seq = 0;
     //tipo da mensagem
-    pacote->m_inicio = htons(static_cast<unsigned int>(TIPO_ACK));
+    pacote->type = TIPO_ACK;
+    memcpy(buffer,&pacote,3); //põe os 3 primiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
     //dados
-    pacote->dados = new unsigned char[bytesLidos];
     memcpy(pacote->dados, dadosArquivo, bytesLidos);
+    memcpy(buffer+3,pacote->dados,bytesLidos); //coloca o tamanho no buffer
     //crc INCOMPLETO
-    pacote->crc = htons(static_cast<unsigned int>(0));
+    pacote->crc = 0;
+    int valor_crc=0;
+    memcpy(buffer + 3 + bytesLidos,&valor_crc,1);
 
-    ssize_t status = send(socket,pacote,(sizeof(pacote) + bytesLidos),0);
+    ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
         perror("Erro ao anviar pacote\n");
         exit (-1);
     }
     else{
-        printf ("pacotes: %ld\n",status);
+        printf ("pacotes: %ld\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
     }
-
-    delete[] pacote->dados;
-    delete[] dadosArquivo;
-    delete pacote;
 }
 
 
