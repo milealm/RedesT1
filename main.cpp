@@ -10,7 +10,7 @@
 
 #define FILE_NAME "arquivoEnvio.txt"
 #define MAX_BYTES 64
-#define PACOTE_MAX 68
+#define PACOTE_MAX 67
 #define MARCADOR_DE_INICIO 126
 #define POLINOMIO 0x9B //10011011
 
@@ -47,7 +47,7 @@ int codigo_crc(char *dadosArquivo, int bytesLidos){
 }
 
 void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz muito sentido passar o file aqui, deveria ser um buffer
-    unsigned char buffer[67]; //63 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
+    unsigned char buffer[PACOTE_MAX]; //63 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
     struct kermit_protocol *pacote = new struct kermit_protocol; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
     pacote->m_inicio = MARCADOR_DE_INICIO;
@@ -97,7 +97,7 @@ void analise_pacote (int socket){
 }
 
 void receber_pacote(int socket){
-    unsigned char *pacote_recebido = (unsigned char *)malloc(PACOTE_MAX);
+    unsigned char pacote_recebido[PACOTE_MAX];
     struct kermit_protocol *pacoteMontado = new(struct kermit_protocol);
     ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
     printf("byte_recebidos: %ld\n",byes_recebidos);
@@ -105,9 +105,8 @@ void receber_pacote(int socket){
         perror ("Erro ao receber mensagem\n");
     }
     else{
-        char marcador_de_inicio = pacote_recebido[0]; //pegando primeiros 8 bits/byte do pacote, que deve ser o marcador_de_inicio
-        int numInicio = static_cast<int>(marcador_de_inicio);
-
+        pacoteMontado->m_inicio = pacote_recebido[0]; //pegando primeiros 8 bits/byte do pacote, que deve ser o marcador_de_inicio
+        printf ("teste %d",pacoteMontado->m_inicio);
     printf ("acabou porque eu não sei se esta dando certo\n");
     }
 
@@ -115,24 +114,11 @@ void receber_pacote(int socket){
 }
 
 int main(int argc, char *argv[]){
-    const char* temp_device1 = "eno1";
-    char* device1 = (char*)malloc(strlen(temp_device1) + 1); // +1 para o terminador nulo
-    if (device1 == NULL) {
-        fprintf(stderr, "Erro ao alocar memória\n");
-        return 1;
-    }
-    strcpy(device1, temp_device1);
-
-    const char* temp_device2 = "enp1s0";
-    char* device2 = (char*)malloc(strlen(temp_device2) + 1); // +1 para o terminador nulo
-    if (device2 == NULL) {
-        fprintf(stderr, "Erro ao alocar memória\n");
-        return 1;
-    }
-    strcpy(device2, temp_device2);
+    char* device;
+    strcpy(device,argv[2]);
     int option = 0;
     if (argc > 1 && strcmp(argv[1], "servidor") == 0){
-        int socketServer = cria_raw_socket(device1);
+        int socketServer = cria_raw_socket(device);
         while (1){
             printf ("Você tem as seguintes opções: 1.Nada 2.Receber 3.Enviar\n");
             scanf ("\n%d",&option);
@@ -150,7 +136,7 @@ int main(int argc, char *argv[]){
         close(socketServer);
     }
     if (argc > 1 && strcmp(argv[1], "cliente") == 0){
-        int socketClient = cria_raw_socket(device2);
+        int socketClient = cria_raw_socket(device);
         while(1){
             printf ("Você tem as seguintes opções: 1.Nada 2.Receber 3.Enviar\n");
             scanf ("%d",&option);
