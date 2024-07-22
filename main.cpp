@@ -51,14 +51,15 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     struct kermit_protocol *pacote = new struct kermit_protocol; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
     pacote->m_inicio = MARCADOR_DE_INICIO;
-    buffer[0] = pacote->m_inicio;
+    //buffer[0] = pacote->m_inicio;
     //tamanho da área de dados
     pacote->tam = bytesLidos;
     //num de sequencia
     pacote->seq = 0;
     //tipo da mensagem
     pacote->type = TIPO_ACK;
-    memcpy(buffer+1,&pacote+1,2); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
+    memcpy(buffer,&pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
+    printf ("teste %u\n",pacote->tam);
     //dados
     memcpy(pacote->dados, dadosArquivo, bytesLidos);
     memcpy(buffer+3,pacote->dados,bytesLidos); //coloca o tamanho no buffer
@@ -106,9 +107,16 @@ void receber_pacote(int socket){
         perror ("Erro ao receber mensagem\n");
     }
     else{
-        pacoteMontado->m_inicio = pacote_recebido[0]; //pegando primeiros 8 bits/byte do pacote, que deve ser o marcador_de_inicio
-        printf ("teste %u\n",pacote_recebido[0]);
-    printf ("acabou porque eu não sei se esta dando certo\n");
+        memcpy(pacoteMontado,pacote_recebido,3);
+        printf ("marcador:%u\n",pacoteMontado->m_inicio); //ok está pegando o 126 certo
+        //printf ("tamanho: %u\n",pacoteMontado->tam);
+        //printf ("seq: %u\n",pacoteMontado->seq);        
+        unsigned int byte = pacote_recebido [1];
+        unsigned int mask = 0b11111100;
+        unsigned int result = byte & mask;
+        result >>= 2;
+        std::cout << "Byte original em vetor[0]: " << std::hex << static_cast<int>(byte) << std::endl;
+        std::cout << "6 bits mais à esquerda: " << std::hex << static_cast<int>(result) << std::endl;
     }
 
     //agora eu tenho que decompor esse pacote para ver o que eu faço;
