@@ -10,7 +10,7 @@
 
 #define FILE_NAME "arquivoEnvio.txt"
 #define MAX_BYTES 64
-#define PACOTE_MAX 67
+#define PACOTE_MAX 68
 #define MARCADOR_DE_INICIO 126
 #define POLINOMIO 0x9B //10011011
 
@@ -47,7 +47,7 @@ int codigo_crc(char *dadosArquivo, int bytesLidos){
 }
 
 void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz muito sentido passar o file aqui, deveria ser um buffer
-    unsigned char buffer[PACOTE_MAX]; //63 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
+    unsigned char buffer[PACOTE_MAX] = {0}; //63 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
     struct kermit_protocol *pacote = new struct kermit_protocol; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
     pacote->m_inicio = MARCADOR_DE_INICIO;
@@ -64,7 +64,8 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     memcpy(buffer+3,pacote->dados,bytesLidos); //coloca o tamanho no buffer
     //crc INCOMPLETO
     pacote->crc = 8;
-    buffer[PACOTE_MAX] = pacote->crc;
+    buffer[PACOTE_MAX-1] = pacote->crc;
+    printf ("teste %u\n",buffer[PACOTE_MAX]);
 
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
@@ -97,11 +98,11 @@ void analise_pacote (int socket){
 }
 
 void receber_pacote(int socket){
-    unsigned char pacote_recebido[PACOTE_MAX]={0};
+    unsigned char pacote_recebido[PACOTE_MAX] = {0};
     struct kermit_protocol *pacoteMontado = new(struct kermit_protocol);
     unsigned int byte;
     unsigned int byteShiftado;
-    ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
+    ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     printf("byte_recebidos: %ld\n",byes_recebidos);
     if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
         perror ("Erro ao receber mensagem\n");
@@ -114,8 +115,8 @@ void receber_pacote(int socket){
         printf ("type:%u\n",pacoteMontado->type);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         printf ("conteudo %s\n",pacoteMontado->dados);
-        pacoteMontado->crc = pacote_recebido[67];
-        printf ("crc%u\n",pacoteMontado->crc);
+        pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
+        printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
     }
 
     //agora eu tenho que decompor esse pacote para ver o que eu faço;
