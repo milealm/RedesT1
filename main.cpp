@@ -60,7 +60,7 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     //tamanho da área de dados
     pacote->tam = bytesLidos;
     //num de sequencia
-    pacote->seq = 0;
+    pacote->seq = 10;
     //tipo da mensagem
     pacote->type = TIPO_ACK;
     memcpy(buffer,pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
@@ -116,7 +116,8 @@ void receber_pacote(int socket){
         memcpy(pacoteMontado,pacote_recebido,3);
         printf ("marcador:%u\n",pacoteMontado->m_inicio); //ok está pegando o 126 certo
         byte = pacote_recebido[1];
-        pacoteMontado->tam = (byte >> 2) & MASCARA_6BITS;
+        printf ("byte:%u\n",byte);
+        pacoteMontado->tam = (byte & MASCARA_6BITS) >> 2;
         printf ("tam:%u\n",pacoteMontado->tam);
     }
 
