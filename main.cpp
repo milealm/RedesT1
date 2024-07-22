@@ -23,7 +23,12 @@
 #define TIPO_FIM 30
 #define TIPO_ERRO 31
 
-struct kermit_protocol {
+#define MASCARA_6BITS 0xFC
+#define MASCARA_2BITS 0x03
+#define MASCARA_3BITS 0xE0
+#define MASCARA_5BITS 0x1F  
+
+struct __attribute__((packed)) kermit_protocol {
     unsigned int m_inicio : 8;   // marcador de inicio
     unsigned int tam : 6;        // tamanho do campo dados em bytes
     unsigned int seq : 5;        // numero de sequência
@@ -58,8 +63,7 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     pacote->seq = 0;
     //tipo da mensagem
     pacote->type = TIPO_ACK;
-    memcpy(buffer,&pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
-    printf ("teste %u\n",pacote->tam);
+    memcpy(buffer,pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
     //dados
     memcpy(pacote->dados, dadosArquivo, bytesLidos);
     memcpy(buffer+3,pacote->dados,bytesLidos); //coloca o tamanho no buffer
@@ -101,6 +105,8 @@ void analise_pacote (int socket){
 void receber_pacote(int socket){
     unsigned char pacote_recebido[PACOTE_MAX];
     struct kermit_protocol *pacoteMontado = new(struct kermit_protocol);
+    unsigned int byte;
+    unsigned int byteShiftado;
     ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
     printf("byte_recebidos: %ld\n",byes_recebidos);
     if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
@@ -109,14 +115,9 @@ void receber_pacote(int socket){
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
         printf ("marcador:%u\n",pacoteMontado->m_inicio); //ok está pegando o 126 certo
-        //printf ("tamanho: %u\n",pacoteMontado->tam);
-        //printf ("seq: %u\n",pacoteMontado->seq);        
-        unsigned int byte = pacote_recebido [1];
-        unsigned int mask = 0b11111100;
-        unsigned int result = byte & mask;
-        result >>= 2;
-        std::cout << "Byte original em vetor[0]: " << std::hex << static_cast<int>(byte) << std::endl;
-        std::cout << "6 bits mais à esquerda: " << std::hex << static_cast<int>(result) << std::endl;
+        byte = pacote_recebido[1];
+        pacoteMontado->tam = (byte >> 2) & MASCARA_6BITS;
+        printf ("tam:%u\n",pacoteMontado->tam);
     }
 
     //agora eu tenho que decompor esse pacote para ver o que eu faço;
