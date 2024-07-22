@@ -23,11 +23,6 @@
 #define TIPO_FIM 30
 #define TIPO_ERRO 31
 
-#define MASCARA_6BITS 0xFC
-#define MASCARA_2BITS 0x03
-#define MASCARA_3BITS 0xE0
-#define MASCARA_5BITS 0x1F  
-
 struct __attribute__((packed)) kermit_protocol {
     unsigned int m_inicio : 8;   // marcador de inicio
     unsigned int tam : 6;        // tamanho do campo dados em bytes
@@ -60,7 +55,7 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     //tamanho da área de dados
     pacote->tam = bytesLidos;
     //num de sequencia
-    pacote->seq = 10;
+    pacote->seq = 1;
     //tipo da mensagem
     pacote->type = TIPO_ACK;
     memcpy(buffer,pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
@@ -68,9 +63,8 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     memcpy(pacote->dados, dadosArquivo, bytesLidos);
     memcpy(buffer+3,pacote->dados,bytesLidos); //coloca o tamanho no buffer
     //crc INCOMPLETO
-    pacote->crc = 0;
-    int valor_crc=0;
-    memcpy(buffer + 3 + bytesLidos,&valor_crc,1);
+    pacote->crc = 8;
+    buffer[PACOTE_MAX] = pacote->crc;
 
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
@@ -103,7 +97,7 @@ void analise_pacote (int socket){
 }
 
 void receber_pacote(int socket){
-    unsigned char pacote_recebido[PACOTE_MAX];
+    unsigned char pacote_recebido[PACOTE_MAX]={0};
     struct kermit_protocol *pacoteMontado = new(struct kermit_protocol);
     unsigned int byte;
     unsigned int byteShiftado;
@@ -115,10 +109,13 @@ void receber_pacote(int socket){
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
         printf ("marcador:%u\n",pacoteMontado->m_inicio); //ok está pegando o 126 certo
-        byte = pacote_recebido[1];
-        printf ("byte:%u\n",byte);
-        pacoteMontado->tam = (byte & MASCARA_6BITS) >> 2;
         printf ("tam:%u\n",pacoteMontado->tam);
+        printf ("seq:%u\n",pacoteMontado->seq);
+        printf ("type:%u\n",pacoteMontado->type);
+        memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
+        printf ("conteudo %s\n",pacoteMontado->dados);
+        pacoteMontado->crc = pacote_recebido[67];
+        printf ("crc%u\n",pacoteMontado->crc);
     }
 
     //agora eu tenho que decompor esse pacote para ver o que eu faço;
