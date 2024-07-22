@@ -47,11 +47,10 @@ int codigo_crc(char *dadosArquivo, int bytesLidos){
 }
 
 void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz muito sentido passar o file aqui, deveria ser um buffer
-    unsigned char buffer[PACOTE_MAX] = {0}; //63 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
+    unsigned char buffer[PACOTE_MAX] = {0}; //64 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
     struct kermit_protocol *pacote = new struct kermit_protocol; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
     pacote->m_inicio = MARCADOR_DE_INICIO;
-    //buffer[0] = pacote->m_inicio;
     //tamanho da área de dados
     pacote->tam = bytesLidos;
     //num de sequencia
@@ -65,8 +64,6 @@ void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz mui
     //crc INCOMPLETO
     pacote->crc = 8;
     buffer[PACOTE_MAX-1] = pacote->crc;
-    printf ("teste %u\n",buffer[PACOTE_MAX]);
-
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
         perror("Erro ao anviar pacote\n");
@@ -109,7 +106,7 @@ void receber_pacote(int socket){
     }
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
-        printf ("marcador:%u\n",pacoteMontado->m_inicio); //ok está pegando o 126 certo
+        printf ("marcador:%u\n",pacoteMontado->m_inicio);
         printf ("tam:%u\n",pacoteMontado->tam);
         printf ("seq:%u\n",pacoteMontado->seq);
         printf ("type:%u\n",pacoteMontado->type);
