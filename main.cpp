@@ -1,160 +1,38 @@
-#include <iostream>
-#include <unistd.h> 
-#include <fstream>
-#include <list>
-#include <string>
-#include <cstring>
-#include <sys/socket.h>
-#include <arpa/inet.h> // Para htons
 #include "rawsocket.h"
-
-#define FILE_NAME "arquivoEnvio.txt"
-#define MAX_BYTES 64
-#define PACOTE_MAX 68
-#define MARCADOR_DE_INICIO 126
-#define POLINOMIO 0x9B //10011011
-
-#define TIPO_ACK 0
-#define TIPO_NACK 1
-#define TIPO_LIST 10
-#define TIPO_BAIXAR 11
-#define TIPO_SHOW 16
-#define TIPO_DADOS 18
-#define TIPO_FIM 30
-#define TIPO_ERRO 31
-
-struct __attribute__((packed)) kermit_protocol {
-    unsigned int m_inicio : 8;   // marcador de inicio
-    unsigned int tam : 6;        // tamanho do campo dados em bytes
-    unsigned int seq : 5;        // numero de sequência
-    unsigned int type : 5;       // tipo da mensagem
-    unsigned char dados[63];        //dados, tem que ter no máximo 64 bytes 
-    unsigned int crc : 8;        //crc
-};
-
-void fragmentar_pacote(std::ifstream& file, int bytesLidos){
-    printf ("kk muito grande\n");
-}
-
-int codigo_crc(char *dadosArquivo, int bytesLidos){
-    // for (int i = 0;i< bytesLidos;i++){
-    //     char byte = dadosArquivo[i];
-    //     for (int j = 7; i>=0;i--){ //indo bit a bit
-
-    //     }
-    // }
-    return 0;
-}
-
-void enviar_pacote(int socket,int bytesLidos,char *dadosArquivo){ //não faz muito sentido passar o file aqui, deveria ser um buffer
-    unsigned char buffer[PACOTE_MAX] = {0}; //64 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
-    struct kermit_protocol *pacote = new struct kermit_protocol; //aloquei estrutura onde eu vou guardar o meu pacote
-    //marcador de início
-    pacote->m_inicio = MARCADOR_DE_INICIO;
-    //tamanho da área de dados
-    pacote->tam = bytesLidos;
-    //num de sequencia
-    pacote->seq = 1;
-    //tipo da mensagem
-    pacote->type = TIPO_ACK;
-    memcpy(buffer,pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
-    //dados
-    memcpy(pacote->dados, dadosArquivo, bytesLidos);
-    memcpy(buffer+3,pacote->dados,bytesLidos); //coloca o tamanho no buffer
-    //crc INCOMPLETO
-    pacote->crc = 8;
-    buffer[PACOTE_MAX-1] = pacote->crc;
-    ssize_t status = send(socket,buffer,sizeof(buffer),0);
-    if (status == (-1)){
-        perror("Erro ao anviar pacote\n");
-        exit (-1);
-    }
-    else{
-        printf ("pacotes: %ld\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
-    }
-}
-
-
-void analise_pacote (int socket){
-    std::ifstream file("arquivoEnvio.txt", std::ios::in | std::ios::binary);
-    file.seekg(0, std::ios::end);
-    std::streampos pos = file.tellg();
-    int bytesLidos = static_cast<int>(pos);
-    printf ("bytesLidos:%d\n",bytesLidos);
-    if (bytesLidos > 64){
-        fragmentar_pacote(file,bytesLidos);
-    }
-    else{
-        file.seekg(0,std::ios::beg);
-        char *dadosArquivo = new char[bytesLidos];
-        file.read (dadosArquivo,bytesLidos);
-        file.close();
-        enviar_pacote(socket,bytesLidos, dadosArquivo);
-    }
-
-}
-
-void receber_pacote(int socket){
-    unsigned char pacote_recebido[PACOTE_MAX] = {0};
-    struct kermit_protocol *pacoteMontado = new(struct kermit_protocol);
-    unsigned int byte;
-    unsigned int byteShiftado;
-    ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
-    printf("byte_recebidos: %ld\n",byes_recebidos);
-    if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
-        perror ("Erro ao receber mensagem\n");
-    }
-    else{
-        memcpy(pacoteMontado,pacote_recebido,3);
-        printf ("marcador:%u\n",pacoteMontado->m_inicio);
-        printf ("tam:%u\n",pacoteMontado->tam);
-        printf ("seq:%u\n",pacoteMontado->seq);
-        printf ("type:%u\n",pacoteMontado->type);
-        memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        printf ("conteudo %s\n",pacoteMontado->dados);
-        pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
-        printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
-    }
-
-    //agora eu tenho que decompor esse pacote para ver o que eu faço;
-}
+#include "pacotes.h"
+#include "definicoes.h"
 
 int main(int argc, char *argv[]){
+    //pegar o parâmetro com a interface
     char* device;
     strcpy(device,argv[2]);
+    //opção para a seleção na tela do usuário
     int option = 0;
+    std::list<struct kermit*> mensagens;
+    std::list<struct kermit*> janela;
+    struct kermit*anterior = NULL;
+
+
+    //diferentes execuções para servidor e para cliente
     if (argc > 1 && strcmp(argv[1], "servidor") == 0){
         int socketServer = cria_raw_socket(device);
         while (1){
-            printf ("Você tem as seguintes opções: 1.Nada 2.Receber 3.Enviar\n");
-            scanf ("\n%d",&option);
-            switch (option){
-            case 1:
-                printf ("ue\n");
-                break;
-            case 2:
-                receber_pacote(socketServer);
-                break;
-            case 3:
-                analise_pacote(socketServer);
-            }
+            struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
         }
         close(socketServer);
     }
     if (argc > 1 && strcmp(argv[1], "cliente") == 0){
         int socketClient = cria_raw_socket(device);
         while(1){
-            printf ("Você tem as seguintes opções: 1.Nada 2.Receber 3.Enviar\n");
+            printf ("Você tem as seguintes opções: 1.Listar 2.Baixar\n");
             scanf ("%d",&option);
             switch (option){
             case 1:
-                printf ("ue\n");
+                enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens,janela);
                 break;
             case 2:
-                receber_pacote(socketClient);
+                enviar_pacote(socketClient,TIPO_BAIXAR,0,NULL,anterior,mensagens,janela);
                 break;
-            case 3:
-                analise_pacote(socketClient);
             }
         }
         close(socketClient);
