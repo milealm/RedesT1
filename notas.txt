@@ -1,2 +1,0 @@
-Para as janelas, eu quero poder mudar uma delas sempre que necessário.
-Ter uma fila de mensagens totais e uma fila de mensagens que aponta para certas mensagens na fila (5 que serão minha janela)
