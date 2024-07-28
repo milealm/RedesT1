@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
                 printf ("\n\n\n\nVamos listar!\n\n");
                 enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens,janela);
                 while (sair != 3){
+                    printf ("sair: %d\n",sair);
                     struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
                     printf ("recebi um pacote!\n");
                     sair = process_resposta(socketClient,pacote,mensagens,janela);
