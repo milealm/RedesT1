@@ -45,11 +45,15 @@ int main(int argc, char *argv[]){
 
                 break;
             case 2:
-                enviar_pacote(socketClient,TIPO_BAIXAR,0,NULL,anterior,mensagens,janela);
-                while (sair != 0){
-                    struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
-                    sair = process_resposta(socketClient,pacote,mensagens,janela);
-                }
+                char nomeArquivo[63];
+                int bytesLidos = 0;
+                scanf("%s%n",&nomeArquivo,&bytesLidos);
+                printf ("nomeArquivo:%s e tamanho:%d\n",nomeArquivo,bytesLidos);
+                // enviar_pacote(socketClient,TIPO_BAIXAR,0,NULL,anterior,mensagens,janela);
+                // while (sair != 4){
+                //     struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
+                //     sair = process_resposta(socketClient,pacote,mensagens,janela);
+                // }
                 break;
             }
         }

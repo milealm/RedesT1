@@ -82,10 +82,17 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //envia um ack, agora vou printar oq eu recebi
+    //quando eu colocar os times eu testo o nack
     enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
     printf ("Nome: %s \n",pacote->dados);
     struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela); //para receber os próximos nomes de arquivo ou um fim de tx
     process_resposta(socket,pacoteMontado,mensagens,janela);
+}
+
+void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
+    //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
+    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
+    
 }
 
 int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -130,6 +137,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 //estou no servidor
                 printf ("Eu acho que vi um BAIXAR\n");
                 //vou mandar um descritor de arquivo depois de mandar um ACK
+                baixarType(socket,pacote,mensagens,janela);
                 return 0;
                 break;
             case TIPO_MOSTRA:
@@ -145,7 +153,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 return 0;
                 break;
             case TIPO_FIM:
-                printf ("Eu acho que vi um FIM\n");
+                printf ("\nEu acho que vi um FIM\n");
                 //o que o cliente recebe para saber que o vídeo já foi todo mandado e dá para dar play no que foi enviado
                 if (pacote->tam == 1){ //fim 
                     printf ("Esses são todos os arquivos disponíveis\n");
@@ -153,7 +161,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 }
                 else{
                     printf ("hora de abrir o player :)\n");
-                    return 0;
+                    return 4;
                 }
                 break;
         }

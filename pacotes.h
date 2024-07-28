@@ -21,4 +21,6 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
 
+void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
+
 #endif //pacotes.h
