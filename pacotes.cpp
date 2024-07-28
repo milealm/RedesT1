@@ -51,12 +51,9 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                     std::string fileName = filePath.filename().string();
                     std::size_t length = fileName.length();
                     if (fileName.length() <= sizeof(nomeArq)) {
-                        printf ("parece que temos um video neste diretorio!\n\n");
                         std::strcpy(nomeArq, fileName.c_str());
-                        printf ("nomeArq: %s\n",nomeArq);
                         std::size_t length = fileName.length();
                         unsigned int lengthAsInt = static_cast<unsigned int>(length);
-                        printf ("tamanho:%d\n",lengthAsInt);
                         if (!mensagens.empty()){
                             struct kermit *anterior = mensagens.back();
                         }
@@ -65,11 +62,10 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             if (result == 2){
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
-                            printf ("\nEnviando Mostra!\n");
+                            printf ("Enviando Mostra!\n");
                             enviar_pacote(socket,TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens,janela);
                             struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela);
-                            printf ("recebi um pacote\n");
-                            int result = process_resposta(socket,pacoteMontado,mensagens,janela);
+                            result = process_resposta(socket,pacoteMontado,mensagens,janela);
                         }
                         //recebi o ack, vou continuar a mandar
                     }
@@ -94,7 +90,6 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 
 int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
-        printf ("\nnao eh aqui eh?\n");
         enviar_pacote(socket,TIPO_NACK,0,NULL,NULL,mensagens,janela);//tem que resolver o numero de sequencia
         return 2;
         //função para colocar na parte de dados o tipo de erro que deu para imprimir
@@ -208,7 +203,7 @@ void enviar_pacote(int socket,int tipo,int bytesLidos,char *dadosArquivo,struct 
         exit (-1);
     }
     else{
-        printf ("pacotes: %ld enviados com sucesso!\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
+        //printf ("pacotes: %ld enviados com sucesso!\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
     }
     //imprimirFilas(mensagens,janela);
 }
@@ -219,7 +214,7 @@ void analise_arquivo (int socket){
     file.seekg(0, std::ios::end);
     std::streampos pos = file.tellg();
     int bytesLidos = static_cast<int>(pos);
-    printf ("bytesLidos:%d\n",bytesLidos);
+    //printf ("bytesLidos:%d\n",bytesLidos);
     if (bytesLidos > 64){
         fragmentar_pacote(file,bytesLidos);
     }
@@ -239,7 +234,7 @@ struct kermit *receber_pacote(int socket,std::list<struct kermit*>& mensagens,st
     unsigned int byte;
     unsigned int byteShiftado;
     ssize_t byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
-    printf("byte_recebidos: %ld\n",byes_recebidos);
+    //printf("byte_recebidos: %ld\n",byes_recebidos);
     if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
         perror ("Erro ao receber mensagem\n");
         //não é um dos meus pacotes, então nem faço nada, só volto a escutar;
@@ -247,14 +242,14 @@ struct kermit *receber_pacote(int socket,std::list<struct kermit*>& mensagens,st
     }
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
-        printf ("marcador:%u\n",pacoteMontado->m_inicio);
-        printf ("tam:%u\n",pacoteMontado->tam);
-        printf ("seq:%u\n",pacoteMontado->seq);
-        printf ("type:%u\n",pacoteMontado->type);
+        //printf ("marcador:%u\n",pacoteMontado->m_inicio);
+        //printf ("tam:%u\n",pacoteMontado->tam);
+        //printf ("seq:%u\n",pacoteMontado->seq);
+        //printf ("type:%u\n",pacoteMontado->type);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        printf ("conteudo %s\n",pacoteMontado->dados);
+        //printf ("conteudo %s\n",pacoteMontado->dados);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
-        printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
+        //printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
         //IF CRC aqui eu calcularia o crc para ver se chegou certo, se não eu mando um NACK
         return pacoteMontado;
     }    
