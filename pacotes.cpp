@@ -47,15 +47,16 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 
                 // Verifica se a extensão é .mp4 ou .avi
                 if (extension == ".mp4" || extension == ".avi") {
-                    printf ("parece que temos um video neste diretorio!\n");
                     ++count;
                     std::string fileName = filePath.filename().string();
-                    if (fileName.length() >= sizeof(nomeArq)) {
+                    std::size_t length = fileName.length();
+                    if (fileName.length() <= sizeof(nomeArq)) {
+                        printf ("parece que temos um video neste diretorio!\n\n");
                         std::strcpy(nomeArq, fileName.c_str());
-
+                        printf ("nomeArq: %s\n",nomeArq);
                         std::size_t length = fileName.length();
-                        int lengthAsInt = static_cast<int>(length);
-
+                        unsigned int lengthAsInt = static_cast<unsigned int>(length);
+                        printf ("tamanho:%d\n",lengthAsInt);
                         if (!mensagens.empty()){
                             struct kermit *anterior = mensagens.back();
                         }

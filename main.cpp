@@ -21,8 +21,8 @@ int main(int argc, char *argv[]){
         printf ("Você está no servidor\n");
         while (1){
             struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
-            printf("\033[H\033[J");
             process_resposta(socketServer,pacote,mensagens,janela);
+            //printf("\033[H\033[J");
         }
         close(socketServer);
     }
