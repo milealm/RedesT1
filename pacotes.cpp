@@ -64,6 +64,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             if (result == 2){
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
+                            printf ("\nEnviando Mostra!\n");
                             enviar_pacote(socket,TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens,janela);
                             struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela);
                             printf ("recebi um pacote\n");
@@ -101,7 +102,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
         switch (pacote->type){
             case TIPO_ACK:
                 //baseado no numero de sequência do pacote, eu tiro algumas mensagens da fila e movo a janela. O negócio é como kk
-                printf ("Eu acho que vi um ACK\n");
+                printf ("\nEu acho que vi um ACK\n");
                 if (janela.empty()){
                     if (mensagens.size() <= 1){
                         return 1;
@@ -114,6 +115,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                                 ++it; // Avança o iterador apenas se não remover o elemento
                             }
                         }
+                        return 1;
                     }
                 }
                 break;
@@ -135,7 +137,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 return 0;
                 break;
             case TIPO_MOSTRA:
-                printf ("Eu acho que vi um MOSTRA\n");
+                printf ("\nEu acho que vi um MOSTRA\n");
                 //o que o cliente recebe com os dados que ele pediu para mostrar, vão ser várias mensagens, cada uma com um dos arquivos do servidor
                 mostraType(socket,pacote,mensagens,janela);
                 return 0;
@@ -151,7 +153,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 //o que o cliente recebe para saber que o vídeo já foi todo mandado e dá para dar play no que foi enviado
                 if (pacote->tam == 1){ //fim 
                     printf ("Esses são todos os arquivos disponíveis\n");
-                    return 0;
+                    return 3;
                 }
                 else{
                     printf ("hora de abrir o player :)\n");
