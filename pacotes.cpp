@@ -33,11 +33,12 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
 
 void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //estou no servidor e recebi um TYPE_LIST, tenho que enviar um ACK
+    printf ("Entendido capitão!\n");
     enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
     int count = 0;
     struct kermit *anterior = NULL;
     char nomeArq[63];
-    std::string path = "./"; // Diretório atual, você pode mudar para qualquer caminho desejado
+    std::string path = "./Videos"; // Diretório atual, você pode mudar para qualquer caminho desejado
     try {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
             if (entry.is_regular_file()) {
@@ -46,6 +47,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 
                 // Verifica se a extensão é .mp4 ou .avi
                 if (extension == ".mp4" || extension == ".avi") {
+                    printf ("parece que temos um video neste diretorio!\n");
                     ++count;
                     std::string fileName = filePath.filename().string();
                     if (fileName.length() >= sizeof(nomeArq)) {
@@ -64,6 +66,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             }
                             enviar_pacote(socket,TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens,janela);
                             struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela);
+                            printf ("recebi um pacote\n");
                             int result = process_resposta(socket,pacoteMontado,mensagens,janela);
                         }
                         //recebi o ack, vou continuar a mandar
@@ -72,6 +75,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             }
             //espero o ack para mandar o próximo pacote
         }
+        printf ("Por hoje é isso pessoal!\n");
         enviar_pacote(socket,TIPO_FIM,1,NULL,anterior,mensagens,janela);//vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
     } catch (const std::filesystem::filesystem_error& err) {
         //erro, sla qual
@@ -88,6 +92,7 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 
 int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
+        printf ("\nnao eh aqui eh?\n");
         enviar_pacote(socket,TIPO_NACK,0,NULL,NULL,mensagens,janela);//tem que resolver o numero de sequencia
         return 2;
         //função para colocar na parte de dados o tipo de erro que deu para imprimir
@@ -99,11 +104,16 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 printf ("Eu acho que vi um ACK\n");
                 if (janela.empty()){
                     if (mensagens.size() <= 1){
-                            return 1;
+                        return 1;
                     }
                     else{
-                            mensagens.pop_front();
-                            return 1;
+                        for (auto it = mensagens.begin(); it != mensagens.end(); ) {
+                            if ((*it)->seq == pacote->seq) {
+                                it = mensagens.erase(it); // Remove o elemento e atualiza o iterador
+                            } else {
+                                ++it; // Avança o iterador apenas se não remover o elemento
+                            }
+                        }
                     }
                 }
                 break;
@@ -114,7 +124,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 break;
             case TIPO_LIST:
                 //o que o servidor recebe para começar a enviar os nomes dos arquivos
-                printf ("Eu acho que vi um LIST\n");
+                printf ("\n\nEu acho que vi um LIST\n");
                 listType(socket,pacote,mensagens,janela);
                 return 0;
                 break;

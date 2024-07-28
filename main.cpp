@@ -21,11 +21,13 @@ int main(int argc, char *argv[]){
         printf ("Você está no servidor\n");
         while (1){
             struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
+            process_resposta(socketServer,pacote,mensagens,janela);
         }
         close(socketServer);
     }
     if (argc > 1 && strcmp(argv[1], "cliente") == 0){
         int socketClient = cria_raw_socket(device);
+        int sair = -1;
         printf ("Você está no cliente\n");
         while(option != 3){
             printf ("Você tem as seguintes opções: \n1.Listar\n2.Baixar\n3.Sair\nSelecione uma delas para continuar\n");
@@ -34,9 +36,18 @@ int main(int argc, char *argv[]){
             case 1:
                 printf ("\n\n\n\nVamos listar!\n\n");
                 enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens,janela);
+                while (sair != 0){
+                    struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
+                    sair = process_resposta(socketClient,pacote,mensagens,janela);
+                }
+
                 break;
             case 2:
                 enviar_pacote(socketClient,TIPO_BAIXAR,0,NULL,anterior,mensagens,janela);
+                while (sair != 0){
+                    struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
+                    sair = process_resposta(socketClient,pacote,mensagens,janela);
+                }
                 break;
             }
         }
