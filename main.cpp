@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
         int socketServer = cria_raw_socket(device);
         printf ("Você está no servidor\n");
         while (1){
-            //struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
+            struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
         }
         close(socketServer);
     }
