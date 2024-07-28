@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
             scanf("%d",&option);
             switch (option){
             case 1:
-                printf ("entrou aqui ja?\n");
+                printf ("\n\n\n\nVamos listar!\n\n");
                 enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens,janela);
                 break;
             case 2:

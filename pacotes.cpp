@@ -195,9 +195,9 @@ void enviar_pacote(int socket,int tipo,int bytesLidos,char *dadosArquivo,struct 
         exit (-1);
     }
     else{
-        printf ("pacotes: %ld\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
+        printf ("pacotes: %ld enviados com sucesso!\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
     }
-    imprimirFilas(mensagens,janela);
+    //imprimirFilas(mensagens,janela);
 }
 
 
