@@ -46,7 +46,9 @@ int main(int argc, char *argv[]){
                 break;
             case 2:
                 char nomeArquivo[64];
-                int bytesLidos = 0;
+                unsigned int bytesLidos = 0;
+                printf ("Digite o nome do arquivo que gostaria de baixar:");
+                scanf("%s%n",nomeArquivo,&bytesLidos);
                 enviar_pacote(socketClient,TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens,janela);
                 while (sair != 4){
                     struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
