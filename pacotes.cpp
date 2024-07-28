@@ -92,7 +92,7 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
     enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
-    
+    printf ("%s\n e %d",pacote->dados,pacote->tam);
 }
 
 int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
