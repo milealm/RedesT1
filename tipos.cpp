@@ -6,7 +6,7 @@
 void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //estou no servidor e recebi um TYPE_LIST, tenho que enviar um ACK
     printf ("Entendido capitão!\n");
-    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
+    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens);
     int count = 0;
     struct kermit *anterior = NULL;
     char nomeArq[63];
@@ -35,7 +35,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
                             printf ("Enviando Mostra!\n");
-                            enviar_pacote(socket,TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens,janela);
+                            enviar_pacote(socket,TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens);
                             struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela);
                             result = process_resposta(socket,pacoteMontado,mensagens,janela);
                         }
@@ -46,7 +46,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             //espero o ack para mandar o próximo pacote
         }
         printf ("Por hoje é isso pessoal!\n");
-        enviar_pacote(socket,TIPO_FIM,1,NULL,anterior,mensagens,janela);//vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
+        enviar_pacote(socket,TIPO_FIM,1,NULL,anterior,mensagens);//vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
     } catch (const std::filesystem::filesystem_error& err) {
         //erro, sla qual
     }
@@ -55,15 +55,34 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //envia um ack, agora vou printar oq eu recebi
     //quando eu colocar os times eu testo o nack
-    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
+    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens);
     printf ("Nome: %s \n",pacote->dados);
     struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela); //para receber os próximos nomes de arquivo ou um fim de tx
     process_resposta(socket,pacoteMontado,mensagens,janela);
 }
 
+void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
+    unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
+    unsigned int resto = bytesLidos % 64;
+    struct kermit *anterior = NULL;
+    printf ("%d numEnvios\n",numEnvios);
+    file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
+    char dadosArquivo[63];
+    for (int i;i<=numEnvios;i++){
+        file.read(dadosArquivo,sizeof(dadosArquivo));
+        std::streamsize arqLido = file.gcount();
+        // Converter para int se necessário
+        int arqLidoInt = static_cast<int>(arqLido);
+        if (!mensagens.empty()){
+            anterior = mensagens.back();
+        }
+        enfileirar(TIPO_DADOS,arqLidoInt,dadosArquivo,anterior,mensagens,janela);
+    }
+}
+
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
-    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens,janela);
+    enviar_pacote(socket,TIPO_ACK,0,NULL,pacote,mensagens);
     printf ("%s\n e %d",pacote->dados,pacote->tam);
     char *str1 = (char*)malloc(pacote->tam + 9 +1);
     struct kermit *anterior = NULL;
@@ -91,13 +110,15 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
             printf ("Enviando Descreve!\n");
-            enviar_pacote(socket,TIPO_DESCREVE,0,bytesLidosStr,anterior,mensagens,janela);
+            enviar_pacote(socket,TIPO_DESCREVE,0,bytesLidosStr,anterior,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,mensagens,janela);
             result = process_resposta(socket,pacoteMontado,mensagens,janela);
         }
+        dadosType(socket,file,bytesLidos,mensagens,janela);
         file.close();
+        imprimirFilas(mensagens,janela);
     }
     printf ("teste\n");
-    //hora de enviar os dados :D
     free(str1);
 }
+

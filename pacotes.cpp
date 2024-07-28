@@ -2,10 +2,6 @@
 #include "pacotes.h"
 #include "tipos.h"
 
-void fragmentar_pacote(std::ifstream& file, int bytesLidos){
-    printf ("kk muito grande\n");
-}
-
 int codigo_crc(char *dadosArquivo, int bytesLidos){
     // for (int i = 0;i< bytesLidos;i++){
     //     char byte = dadosArquivo[i];
@@ -33,7 +29,7 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
 
 int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
-        enviar_pacote(socket,TIPO_NACK,0,NULL,NULL,mensagens,janela);//tem que resolver o numero de sequencia
+        enviar_pacote(socket,TIPO_NACK,0,NULL,NULL,mensagens);//tem que resolver o numero de sequencia
         return 2;
         //função para colocar na parte de dados o tipo de erro que deu para imprimir
     }
@@ -73,7 +69,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 //estou no servidor
                 printf ("Eu acho que vi um BAIXAR\n");
                 //vou mandar um descritor de arquivo depois de mandar um ACK
-                baixarType(socket,pacote,mensagens,janela);
+                //baixarType(socket,pacote,mensagens,janela);
                 printf ("voltou?\n");
                 return 0;
                 break;
@@ -86,6 +82,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
             case TIPO_DESCREVE:
                 printf ("Eu acho que vi um DESCREVE\n");
                 //o que o cliente vai receber depois de mandar um baixar, receber um ack, indica que vai começar a mandar dados
+                printf ("Seu video começará a ser baixado agora\n");
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 return 0;
                 break;
@@ -106,7 +103,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
     return 2;
 }
 
-void enviar_pacote(int socket,int tipo,int bytesLidos,char *dadosArquivo,struct kermit *anterior,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){ //não faz muito sentido passar o file aqui, deveria ser um buffer
+void enviar_pacote(int socket,int tipo,int bytesLidos,char *dadosArquivo,struct kermit *anterior,std::list<struct kermit*>& mensagens){ //não faz muito sentido passar o file aqui, deveria ser um buffer
     unsigned char buffer[PACOTE_MAX] = {0}; //64 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
     struct kermit *pacote = new struct kermit; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
@@ -153,26 +150,6 @@ void enviar_pacote(int socket,int tipo,int bytesLidos,char *dadosArquivo,struct 
     //imprimirFilas(mensagens,janela);
 }
 
-
-void analise_arquivo (int socket){
-    std::ifstream file("arquivoEnvio.txt", std::ios::in | std::ios::binary);
-    file.seekg(0, std::ios::end);
-    std::streampos pos = file.tellg();
-    int bytesLidos = static_cast<int>(pos);
-    //printf ("bytesLidos:%d\n",bytesLidos);
-    if (bytesLidos > 64){
-        fragmentar_pacote(file,bytesLidos);
-    }
-    else{
-        file.seekg(0,std::ios::beg);
-        char *dadosArquivo = new char[bytesLidos];
-        file.read (dadosArquivo,bytesLidos);
-        file.close();
-        //enviar_pacote(socket,TIPO_DADOS,bytesLidos, dadosArquivo);
-    }
-
-}
-
 struct kermit *receber_pacote(int socket,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     unsigned char pacote_recebido[PACOTE_MAX] = {0};
     struct kermit *pacoteMontado = new(struct kermit);
@@ -198,4 +175,43 @@ struct kermit *receber_pacote(int socket,std::list<struct kermit*>& mensagens,st
         //IF CRC aqui eu calcularia o crc para ver se chegou certo, se não eu mando um NACK
         return pacoteMontado;
     }    
+}
+
+void enfileirar(int tipo,int bytesLidos,char *dadosArquivo,struct kermit *anterior,std::list<struct kermit*>&mensagens,std::list<struct kermit*>&janela){
+    unsigned char buffer[PACOTE_MAX] = {0}; //64 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
+    struct kermit *pacote = new struct kermit; //aloquei estrutura onde eu vou guardar o meu pacote
+    //marcador de início
+    pacote->m_inicio = MARCADOR_DE_INICIO;
+    //tamanho da área de dados
+    pacote->tam = bytesLidos;
+    //num de sequencia
+    if (anterior){
+        if (tipo != TIPO_ACK && tipo!=TIPO_NACK){
+            if (anterior->seq != 31){
+                pacote->seq = anterior->seq+1;
+            }
+            else {
+                pacote->seq = 0;
+            }
+        }
+        else{
+            pacote->seq = anterior->seq;
+        }
+    }
+    else{
+        pacote->seq = 0;
+    }
+    //tipo da mensagem
+    pacote->type = tipo;
+    memcpy(buffer,pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
+    //dados
+    if (dadosArquivo){
+        memcpy(pacote->dados, dadosArquivo, bytesLidos);
+        memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
+    }
+    //crc INCOMPLETO
+    pacote->crc = 8;
+    buffer[PACOTE_MAX-1] = pacote->crc;
+    mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
+    //imprimirFilas(mensagens,janela);
 }

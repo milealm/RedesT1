@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
             switch (option){
             case 1:
                 printf ("\n\n\n\nVamos listar!\n\n");
-                enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens,janela);
+                enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens);
                 while (sair != 3){
                     struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
                     sair = process_resposta(socketClient,pacote,mensagens,janela);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
                 unsigned int bytesLidos = 0;
                 printf ("Digite o nome do arquivo que gostaria de baixar:");
                 scanf("%s%n",nomeArquivo,&bytesLidos);
-                enviar_pacote(socketClient,TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens,janela);
+                enviar_pacote(socketClient,TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                 while (sair != 4){
                     struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
                     sair = process_resposta(socketClient,pacote,mensagens,janela);
