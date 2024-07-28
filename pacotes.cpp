@@ -69,7 +69,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 //estou no servidor
                 printf ("Eu acho que vi um BAIXAR\n");
                 //vou mandar um descritor de arquivo depois de mandar um ACK
-                //baixarType(socket,pacote,mensagens,janela);
+                baixarType(socket,pacote,mensagens,janela);
                 printf ("voltou?\n");
                 return 0;
                 break;
@@ -82,6 +82,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
             case TIPO_DESCREVE:
                 printf ("Eu acho que vi um DESCREVE\n");
                 //o que o cliente vai receber depois de mandar um baixar, receber um ack, indica que vai começar a mandar dados
+                enviar_pacote(socket,TIPO_ACK,0,NULL,NULL,mensagens);
                 printf ("Seu video começará a ser baixado agora\n");
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 return 0;

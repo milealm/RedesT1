@@ -10,6 +10,6 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 
 void dadosType(int socket,std::ifstream& file,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
 
-void baixarType(int socket, struct kermit *pacote,unsigned int bytesLidos,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
+void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
 
 #endif //tipos.h

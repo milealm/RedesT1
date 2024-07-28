@@ -62,6 +62,7 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 }
 
 void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
+    printf ("Dados\n");
     unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
     unsigned int resto = bytesLidos % 64;
     struct kermit *anterior = NULL;
