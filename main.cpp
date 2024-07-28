@@ -4,7 +4,9 @@
 
 int main(int argc, char *argv[]){
     //pegar o parâmetro com a interface
-    char* device;
+    printf ("Bem vindo ao seu sistema de Streaming!\n");
+    size_t length = sizeof(argv[2]);
+    char device[length];
     strcpy(device,argv[2]);
     //opção para a seleção na tela do usuário
     int option = 0;
@@ -16,18 +18,21 @@ int main(int argc, char *argv[]){
     //diferentes execuções para servidor e para cliente
     if (argc > 1 && strcmp(argv[1], "servidor") == 0){
         int socketServer = cria_raw_socket(device);
+        printf ("Você está no servidor\n");
         while (1){
-            struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
+            //struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
         }
         close(socketServer);
     }
     if (argc > 1 && strcmp(argv[1], "cliente") == 0){
         int socketClient = cria_raw_socket(device);
-        while(1){
-            printf ("Você tem as seguintes opções: 1.Listar 2.Baixar\n");
-            scanf ("%d",&option);
+        printf ("Você está no cliente\n");
+        while(option != 3){
+            printf ("Você tem as seguintes opções: \n1.Listar\n2.Baixar\n3.Sair\nSelecione uma delas para continuar\n");
+            scanf("%d",&option);
             switch (option){
             case 1:
+                printf ("entrou aqui ja?\n");
                 enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens,janela);
                 break;
             case 2:
@@ -37,5 +42,4 @@ int main(int argc, char *argv[]){
         }
         close(socketClient);
     }
-
 }

@@ -96,6 +96,7 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
         switch (pacote->type){
             case TIPO_ACK:
                 //baseado no numero de sequência do pacote, eu tiro algumas mensagens da fila e movo a janela. O negócio é como kk
+                printf ("Eu acho que vi um ACK\n");
                 if (janela.empty()){
                     if (mensagens.size() <= 1){
                             return 1;
@@ -108,29 +109,35 @@ int process_resposta(int socket,struct kermit *pacote,std::list<struct kermit*>&
                 break;
             case TIPO_NACK:
                 //vou ter que reenviar uma janela ou mensagem //envia uma mensagem de erro TIPO_ERRO
+                printf ("Eu acho que vi um NACK\n");
                 return 2;
                 break;
             case TIPO_LIST:
                 //o que o servidor recebe para começar a enviar os nomes dos arquivos
+                printf ("Eu acho que vi um LIST\n");
                 listType(socket,pacote,mensagens,janela);
                 return 0;
                 break;
             case TIPO_BAIXAR:
                 //estou no servidor
+                printf ("Eu acho que vi um BAIXAR\n");
                 //vou mandar um descritor de arquivo depois de mandar um ACK
                 return 0;
                 break;
             case TIPO_MOSTRA:
+                printf ("Eu acho que vi um MOSTRA\n");
                 //o que o cliente recebe com os dados que ele pediu para mostrar, vão ser várias mensagens, cada uma com um dos arquivos do servidor
                 mostraType(socket,pacote,mensagens,janela);
                 return 0;
                 break;
             case TIPO_DESCREVE:
+                printf ("Eu acho que vi um DESCREVE\n");
                 //o que o cliente vai receber depois de mandar um baixar, receber um ack, indica que vai começar a mandar dados
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 return 0;
                 break;
             case TIPO_FIM:
+                printf ("Eu acho que vi um FIM\n");
                 //o que o cliente recebe para saber que o vídeo já foi todo mandado e dá para dar play no que foi enviado
                 if (pacote->tam == 1){ //fim 
                     printf ("Esses são todos os arquivos disponíveis\n");
