@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
                     while (sair != 3){
                         struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
                         sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
-                        if (sair = TIPO_NACK){ //deu timeout ou é só um nack
+                        if (sair == TIPO_NACK){ //deu timeout ou é só um nack
                             printf ("Ixi? Vou mandar de novo!\n");
                             enviar_pacote(socketClient,0,enviar,mensagens);
                             decide++;
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
                     while (sair != FIM_TIMEOUT || TIPO_FIM){
                         struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
                         sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
-                        if (sair = TIPO_NACK){ //deu timeout ou é só um nack
+                        if (sair == TIPO_NACK){ //deu timeout ou é só um nack
                             printf ("Ixi? Vou mandar de novo!\n");
                             enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
                             decide++;
