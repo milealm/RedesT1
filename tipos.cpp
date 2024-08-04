@@ -22,15 +22,14 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                 std::string extension = filePath.extension().string();
 
                 // Verifica se a extensão é .mp4 ou .avi
-                if (extension == ".mp4" || extension == ".avi") {
+                if (extension == ".mp4" || extension == ".avi" || extension == ".txt") {
                     ++count;
-                    printf ("nao entrei aqui?\n");
                     std::string fileName = filePath.filename().string();
                     std::size_t length = fileName.length();
                     if (fileName.length() <= sizeof(nomeArq)) {
-                        printf ("e aqui?\n");
                         std::strcpy(nomeArq, fileName.c_str());
                         std::size_t length = fileName.length();
+                        printf ("nomeArq %s\n",nomeArq);
                         unsigned int lengthAsInt = static_cast<unsigned int>(length);
                         if (!mensagens.empty()){
                             anterior = mensagens.back();
@@ -42,7 +41,10 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             printf ("Enviando Mostra!\n");
                             struct kermit *enviar = montar_pacote(TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens);
                             enviar_pacote(socket,lengthAsInt,enviar,mensagens);
-                            struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
+                            struct kermit *pacoteMontado = NULL;
+                            while (pacoteMontado == NULL){
+                                pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
+                            }
                             result = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
                             if (decide == 4 || result == FIM_TIMEOUT){
                                 printf ("não vou possível receber este pacote\n");
@@ -50,6 +52,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             }
                             decide++;
                         }
+                        result = -1;
                         //recebi o ack, vou continuar a mandar
                     }
                 }
@@ -104,7 +107,8 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 
 void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> mensagens){
     for (struct kermit *elemento :janela){
-        if (elemento){
+        if (elemento != NULL){
+            printf ("enviei\n");
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
