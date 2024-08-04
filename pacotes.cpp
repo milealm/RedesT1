@@ -207,7 +207,7 @@ struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struc
     }
     //crc INCOMPLETO
     pacote->crc = 8;
-    return 0;
+    return pacote;
 }
 
 void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<struct kermit*>& mensagens){
