@@ -72,6 +72,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
         return -1; //sorrie e acene, continue ouvindo
     }
     else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
+        printf("aqui?");
         struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,NULL,mensagens);
         enviar_pacote(socket,0,enviar,mensagens);//tem que resolver o numero de sequencia
         return TIPO_NACK;
