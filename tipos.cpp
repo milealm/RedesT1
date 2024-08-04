@@ -102,20 +102,28 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     }
 }
 
-void enviar_janela(int socket,std::list <struct kermit *>janela,std::list <struct kermit*> mensagens){
+void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> mensagens){
     for (struct kermit *elemento :janela){
         if (elemento){
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
     int demora = 0;
-    struct kermit *pacote = receber_pacote(socket,demora,mensagens,janela);
+    struct kermit *pacote = NULL;
+    while (pacote == NULL){
+        printf ("esperando...\n");
+        pacote = receber_pacote(socket,demora,mensagens,janela);
+    }
     int result = process_resposta(socket,pacote,demora,mensagens,janela);
+    printf ("result %d\n",result);
     if (pacote != NULL){
-        if (pacote->type = TIPO_ACK){
+        if (pacote->type == TIPO_ACK){
+            printf ("recebi um ack!\n");
             janela.clear();
+            printf ("janela size:%ld\n",janela.size());
         }
-        else if (pacote->type = TIPO_NACK){
+        else if (pacote->type == TIPO_NACK){
+            printf ("recebi um nack\n");
             int numSequencia = pacote->seq;
             for (auto it = janela.begin(); it != janela.end(); ) {
                 if ((*it)->seq < numSequencia) {
@@ -145,8 +153,8 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[63];
-    for (int i = 0;i< numEnvios;i++){
-        printf ("%d\n",i);
+    for (int i = 0;i< 25;i++){
+        printf ("%d e janelaSize %ld\n",i,janela.size());
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
         // Converter para int se necessário
@@ -158,6 +166,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
             struct kermit *elementoJan = montar_pacote(TIPO_DADOS,sizeof(dadosArquivo),dadosArquivo,anterior,mensagens);
             janela.push_back(elementoJan);
             if (janela.size() == 5 || i == (numEnvios -1 )){
+                printf ("não entrou aqui?\n");
                 enviar_janela(socket,janela,mensagens);
             }
         }
