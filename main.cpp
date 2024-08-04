@@ -22,7 +22,9 @@ int main(int argc, char *argv[]){
         int decide = 0;
         while (1){
             struct kermit *pacote = receber_pacote(socketServer,decide,mensagens,janela); //receber o primeiro pacote
-            int sair = process_resposta(socketServer,pacote,decide,mensagens,janela);
+            if (pacote != NULL){
+                int sair = process_resposta(socketServer,pacote,decide,mensagens,janela);
+            }
             //printf("\033[H\033[J");
         }
         close(socketServer);
