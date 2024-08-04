@@ -195,7 +195,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
         if (!mensagens.empty()){
            anterior = mensagens.back();
         }
-        int result = 0;
+        int result = -1;
         int demora = 0;
         while (result != TIPO_ACK ){
             if (result == TIPO_NACK){
