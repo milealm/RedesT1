@@ -59,6 +59,9 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     //file << elementoJan->dados;
                 }
             }
+            else {
+                printf ("recebi um tipo FIM\n");
+            }
         }
     }
     printf ("ack!\n");
@@ -164,6 +167,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             numJanela++;
                             printf ("adiciona janela %ld\n",janelaClient.size());
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
+                            printf ("pacoteJanela type:%d\n",pacoteJanela->type);
                             if (pacoteJanela->type == TIPO_FIM){
                                 printf ("cheguei ao fim!\n");
                             }
