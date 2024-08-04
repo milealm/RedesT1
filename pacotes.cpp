@@ -157,6 +157,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             printf ("recebi!\n");
                         }
                         janelaClient.push_back(pacoteJanela);
+                        printf ("ultima janela\n");
                         if (janelaClient.size() == 5){
                             printf("sera ack ou nack?\n");
                             verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
