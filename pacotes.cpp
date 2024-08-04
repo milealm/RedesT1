@@ -159,7 +159,10 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 janelaClient.clear();
-                pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
+                pacoteJanela = NULL;
+                while (pacoteJanela == NULL){  
+                    pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
+                }
                 if (pacoteJanela != NULL){  
                     while (pacoteJanela->type != TIPO_FIM || numJanela > 5){
                         while (numJanela < 3 || pacote->type != TIPO_FIM){
