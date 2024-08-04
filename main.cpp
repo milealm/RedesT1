@@ -56,9 +56,9 @@ int main(int argc, char *argv[]){
                     break;
                 case 2:
                     char nomeArquivo[64];
-                    unsigned int bytesLidos = 14;
+                    unsigned int bytesLidos = 10;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
-                    strcpy(nomeArquivo,"videoJoia.mp4");
+                    strcpy(nomeArquivo,"teste.txt");
                     //scanf("%s%n",nomeArquivo,&bytesLidos);
                     enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                     enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
