@@ -105,10 +105,11 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     }
 }
 
-void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> mensagens){
+void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> &mensagens){
+    printf ("size janela %ld\n",janela.size());
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
-            printf ("enviei\n");
+            printf ("enviei elemento->tipo %d\n",elemento->type);
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
