@@ -161,7 +161,6 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
         if (!mensagens.empty()){
             anterior = mensagens.back();
         }
-        printf ("\n%d e janelaSize %ld\n",i,janela.size());
         if (janela.size() < 5){
             struct kermit *elementoJan = montar_pacote(TIPO_DADOS,sizeof(dadosArquivo),dadosArquivo,anterior,mensagens);
             janela.push_back(elementoJan);
