@@ -165,7 +165,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 }
                 if (pacoteJanela != NULL){  
                     while (pacoteJanela->type != TIPO_FIM || numJanela > 5){
-                        while (numJanela < 3 || pacote->type != TIPO_FIM){
+                        while (janelaClient.size()<5 || pacote->type != TIPO_FIM){
                             janelaClient.push_back(pacoteJanela);
                             numJanela++;
                             printf ("adiciona janela %ld\n",janelaClient.size());
