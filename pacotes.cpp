@@ -165,37 +165,28 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 }
                 if (pacoteJanela != NULL){  
                     while (pacoteJanela->type != TIPO_FIM || numJanela > 5){
-                        printf ("pacote tipo %d e num seq %d",pacoteJanela->type,pacoteJanela->seq);
-                        pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                        printf ("pacote tipo %d e num seq %d",pacoteJanela->type,pacoteJanela->seq);
-                        pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                        printf ("pacote tipo %d e num seq %d",pacoteJanela->type,pacoteJanela->seq);
-                        pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                        printf ("pacote tipo %d e num seq %d",pacoteJanela->type,pacoteJanela->seq);
-                        pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                        printf ("pq senhor\n");
-                        // while (janelaClient.size() <5 || pacote->type != TIPO_FIM){
-                        //     janelaClient.push_back(pacoteJanela);
-                        //     numJanela++;
-                        //     pacoteJanela = NULL;
-                        //     while (pacoteJanela == NULL){
-                        //         pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                        //     }
-                        //     printf ("pacoteJanela type:%d\n",pacoteJanela->type);
-                        //     if (pacoteJanela->type == TIPO_FIM){
-                        //         printf ("cheguei ao fim!\n");
-                        //     }
-                        //     printf ("adiciona janela %ld\n",janelaClient.size());
-                        //     printf ("recebi!\n");
-                        // }
-                        // janelaClient.push_back(pacoteJanela);
-                        // numJanela++;
-                        // printf ("ultima janela %ld %d\n",janelaClient.size(),numJanela);
-                        // if (janelaClient.size() == 5 || pacote->type == TIPO_FIM){
-                        //     printf("sera ack ou nack?\n");
-                        //     verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
-                        //     numJanela = 0;
-                        // }
+                        while ((janelaClient.size() < 4) || pacote->type != TIPO_FIM){
+                            janelaClient.push_back(pacoteJanela);
+                            numJanela++;
+                            pacoteJanela = NULL;
+                            while (pacoteJanela == NULL){
+                                pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
+                            }
+                            printf ("pacoteJanela type:%d\n",pacoteJanela->type);
+                            if (pacoteJanela->type == TIPO_FIM){
+                                printf ("cheguei ao fim!\n");
+                            }
+                            printf ("adiciona janela %ld\n",janelaClient.size());
+                            printf ("recebi!\n");
+                        }
+                        janelaClient.push_back(pacoteJanela);
+                        numJanela++;
+                        printf ("ultima janela %ld %d\n",janelaClient.size(),numJanela);
+                        if (janelaClient.size() == 5 || pacote->type == TIPO_FIM){
+                            printf("sera ack ou nack?\n");
+                            verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
+                            numJanela = 0;
+                        }
                     }
                     printf ("acabou! da pra abrir o player eu acho k\n");
                 }
