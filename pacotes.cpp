@@ -160,15 +160,16 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 janelaClient.clear();
                 pacoteJanela = NULL;
-                while (pacoteJanela->type != TIPO_FIM){
-                    while ((janelaClient.size() < 5 || pacote->type != TIPO_FIM)){
+                while (pacoteJanela == NULL || (pacoteJanela->type != TIPO_FIM && numJanela > 5)){
+                    while ((janelaClient.size() < 5 && pacote->type != TIPO_FIM)){
                         while(pacoteJanela == NULL){
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
                         }
                         janelaClient.push_back(pacoteJanela);
+                        numJanela++;
                         printf ("tamanho janela %ld\n",janelaClient.size());
                     }
-                    janelaClient.push_back(pacoteJanela);
+                    //janelaClient.push_back(pacoteJanela);
                     numJanela++;
                     printf ("ultima janela %ld %d\n",janelaClient.size(),numJanela);
                     if (janelaClient.size() == 5 || pacote->type == TIPO_FIM){
