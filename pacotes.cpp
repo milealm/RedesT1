@@ -38,7 +38,8 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
     while (!janelaClient.empty()){
         elementoJan = janelaClient.front();
         janelaClient.pop_front(); 
-        if (elementoJan == NULL || elementoJan->m_inicio != 126 || elementoJan->crc != 0){ //incluir checagem crc
+        if (elementoJan == NULL || elementoJan->m_inicio != 126){ //incluir checagem crc
+            printf ("veio errado ;-;\n");
             struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,elementoJan,mensagens);
             enviar_pacote(socket,0,enviar,mensagens);
         }
@@ -54,6 +55,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
             }
         }
     }
+    printf ("ack!\n");
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,elementoJan,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
 }
