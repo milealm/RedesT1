@@ -9,11 +9,14 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
     int count = 0;
+    int result = -1;
+    int decide = 0;
     struct kermit *anterior = NULL;
     char nomeArq[63];
     std::string path = "./Videos"; // Diretório atual, você pode mudar para qualquer caminho desejado
-    try {
+    //try {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
+            printf ("sera que tem arquivo aqui?\n");
             if (entry.is_regular_file()) {
                 std::filesystem::path filePath = entry.path();
                 std::string extension = filePath.extension().string();
@@ -21,17 +24,17 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                 // Verifica se a extensão é .mp4 ou .avi
                 if (extension == ".mp4" || extension == ".avi") {
                     ++count;
+                    printf ("nao entrei aqui?\n");
                     std::string fileName = filePath.filename().string();
                     std::size_t length = fileName.length();
                     if (fileName.length() <= sizeof(nomeArq)) {
+                        printf ("e aqui?\n");
                         std::strcpy(nomeArq, fileName.c_str());
                         std::size_t length = fileName.length();
                         unsigned int lengthAsInt = static_cast<unsigned int>(length);
                         if (!mensagens.empty()){
                             anterior = mensagens.back();
                         }
-                        int result = 0;
-                        int decide = 0;
                         while (result != TIPO_ACK ){
                             if (result == TIPO_NACK){
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
@@ -54,11 +57,30 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             //espero o ack para mandar o próximo pacote
         }
         printf ("Por hoje é isso pessoal!\n");
-        struct kermit *enviar = montar_pacote(TIPO_FIM,1,NULL,anterior,mensagens);
-        enviar_pacote(socket,1,enviar,mensagens);//vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
-    } catch (const std::filesystem::filesystem_error& err) {
-        //erro, sla qual
-    }
+        result = -1;
+        decide = 0;
+        if (!mensagens.empty()){
+            anterior = mensagens.back();
+        }
+        while (result != TIPO_ACK ){
+            if (result == TIPO_NACK){
+                mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
+            }
+            printf ("Enviando Fim!\n");
+            enviar = montar_pacote(TIPO_FIM,1,NULL,anterior,mensagens);
+            enviar_pacote(socket,1,enviar,mensagens);
+            struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
+            result = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
+            if (decide == 4 || result == FIM_TIMEOUT){
+                printf ("não vou possível receber este pacote\n");
+                break;
+            }
+            decide++;
+        }
+        //vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
+    // } catch (const std::filesystem::filesystem_error& err) {
+        
+    // }
 }
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -124,6 +146,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[63];
     for (int i = 0;i<numEnvios;i++){
+        printf ("a\n");
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
         // Converter para int se necessário
@@ -180,7 +203,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
             }
             printf ("Enviando Descreve!\n");
             struct kermit *enviar = montar_pacote(TIPO_DESCREVE,pacote->tam,(char*)pacote->dados,anterior,mensagens); //enviando o nome do pacote
-            enviar_pacote(socket,21,enviar,mensagens);
+            enviar_pacote(socket,pacote->tam,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,demora,mensagens,janela);
             result = process_resposta(socket,pacoteMontado,demora,mensagens,janela);
             if (demora == 4 && result == FIM_TIMEOUT){
@@ -189,7 +212,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
             }
             demora++;
         }
-        dadosType(socket,file,bytesLidos,mensagens);
+        //dadosType(socket,file,bytesLidos,mensagens);
         file.close();
     }
     printf ("teste\n");

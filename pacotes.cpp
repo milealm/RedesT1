@@ -116,6 +116,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //o que o servidor recebe para começar a enviar os nomes dos arquivos
                 printf ("\n\nEu acho que vi um LIST\n");
                 listType(socket,pacote,mensagens,janela);
+                printf ("\nvamos voltar a escutar...\n");
                 return TIPO_LIST;
                 break;
 
@@ -146,15 +147,17 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                while (pacoteJanela->type != TIPO_FIM){
-                    while (janelaClient.size() <5){
+                if (pacoteJanela != NULL){  
+                    while (pacoteJanela->type != TIPO_FIM){
+                        while (janelaClient.size() <5){
+                            janelaClient.push_back(pacoteJanela);
+                            pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
+                        }
                         janelaClient.push_back(pacoteJanela);
-                        pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
-                    }
-                    janelaClient.push_back(pacoteJanela);
-                    if (janelaClient.size() == 5){
-                        verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
-                        numJanela = 0;
+                        if (janelaClient.size() == 5){
+                            verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
+                            numJanela = 0;
+                        }
                     }
                 }
                 return TIPO_DESCREVE;
@@ -270,14 +273,14 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     }
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
-        printf ("marcador:%u\n",pacoteMontado->m_inicio);
-        printf ("tam:%u\n",pacoteMontado->tam);
-        printf ("seq:%u\n",pacoteMontado->seq);
-        printf ("type:%u\n",pacoteMontado->type);
+        // printf ("marcador:%u\n",pacoteMontado->m_inicio);
+        // printf ("tam:%u\n",pacoteMontado->tam);
+        // printf ("seq:%u\n",pacoteMontado->seq);
+        // printf ("type:%u\n",pacoteMontado->type);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        printf ("conteudo %s\n",pacoteMontado->dados);
+        //printf ("conteudo %s\n",pacoteMontado->dados);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
-        printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
+        //printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
         //IF CRC aqui eu calcularia o crc para ver se chegou certo, se não eu mando um NACK
         return pacoteMontado;
     }    
