@@ -68,6 +68,9 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
         printf ("não chegou ainda, vou enviar um nack");
         return TIPO_NACK; //nack
     }
+    else if (pacote->m_inicio == 0){
+        return -1; //sorrie e acene, continue ouvindo
+    }
     else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
         struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,NULL,mensagens);
         enviar_pacote(socket,0,enviar,mensagens);//tem que resolver o numero de sequencia
@@ -247,7 +250,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     for (int j = 0; j <= demora; j++){
         timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS; //exponencial
     }
-    while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos > 0){
+    while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos < 0){
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     }
     if (timestamp()- comeco > timeoutDaVez){
@@ -260,10 +263,11 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         return NULL;
     }
     printf("byte_recebidos: %ld\n",bytes_recebidos);
-    if (bytes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
-        perror ("Erro ao receber mensagem\n");
+    if (bytes_recebidos < 67 && bytes_recebidos){ //menor mensagem, com todos os pacotes, é 4 bytes
+        //printf ("Não eh minha mensagem\n");
         //não é um dos meus pacotes, então nem faço nada, só volto a escutar;
-        return NULL;
+        pacoteMontado = {0};
+        return pacoteMontado;
     }
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
