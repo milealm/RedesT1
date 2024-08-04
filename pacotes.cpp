@@ -38,7 +38,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
     while (!janelaClient.empty()){
         elementoJan = janelaClient.front();
         janelaClient.pop_front(); 
-        if (elementoJan == NULL || elementoJan->m_inicio != 126){ //incluir checagem crc
+        if (elementoJan->m_inicio != 126){ //incluir checagem crc
             printf ("veio errado ;-;\n");
             struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,elementoJan,mensagens);
             enviar_pacote(socket,0,enviar,mensagens);
