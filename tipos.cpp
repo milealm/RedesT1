@@ -86,7 +86,6 @@ void enviar_janela(int socket,std::list <struct kermit *>janela,std::list <struc
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
-    int result = 0;
     int demora = 0;
     struct kermit *pacote = receber_pacote(socket,demora,mensagens,janela);
     int result = process_resposta(socket,pacote,demora,mensagens,janela);
