@@ -164,6 +164,9 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             numJanela++;
                             printf ("adiciona janela %ld\n",janelaClient.size());
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
+                            if (pacote->type == TIPO_FIM){
+                                printf ("cheguei ao fim!\n");
+                            }
                             printf ("recebi!\n");
                         }
                         janelaClient.push_back(pacoteJanela);

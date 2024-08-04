@@ -177,6 +177,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     }
     struct kermit *enviar = montar_pacote(TIPO_FIM,0,NULL,anterior,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
+    printf ("enviei o FIM\n");
 }
 
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
