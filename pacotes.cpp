@@ -143,7 +143,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
 
                 printf ("Eu acho que vi um DESCREVE\n");
                 //o que o cliente vai receber depois de mandar um baixar, receber um ack, indica que vai começar a mandar dados
-                enviar = montar_pacote(TIPO_NACK,0,NULL,NULL,mensagens);
+                enviar = montar_pacote(TIPO_ACK,0,NULL,NULL,mensagens);
                 enviar_pacote(socket,0,enviar,mensagens);
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
