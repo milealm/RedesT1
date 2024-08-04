@@ -152,10 +152,12 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                     while (pacoteJanela->type != TIPO_FIM){
                         while (janelaClient.size() <5){
                             janelaClient.push_back(pacoteJanela);
+                            printf ("adiciona janela\n");
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
                         }
                         janelaClient.push_back(pacoteJanela);
                         if (janelaClient.size() == 5){
+                            printf("sera ack ou nack?\n");
                             verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
                             numJanela = 0;
                         }

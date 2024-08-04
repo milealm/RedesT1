@@ -145,8 +145,8 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[63];
-    for (int i = 0;i<numEnvios;i++){
-        printf ("a\n");
+    for (int i = 0;i<6;i++){
+        printf ("%d\n",i);
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
         // Converter para int se necessário
