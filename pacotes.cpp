@@ -60,7 +60,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     printf ("recebi algo! vamos processar!!\n");
-    std::list <struct kermit*> janelaClient = {0};
+    std::list <struct kermit*> janelaClient;
     if (pacote == NULL && decide == 4){
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
     }
@@ -147,6 +147,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 enviar_pacote(socket,0,enviar,mensagens);
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
+                janelaClient.clear();
                 pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
                 if (pacoteJanela != NULL){  
                     while (pacoteJanela->type != TIPO_FIM || numJanela > 5){
