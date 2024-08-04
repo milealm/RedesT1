@@ -19,14 +19,15 @@ int main(int argc, char *argv[]){
     if (argc > 1 && strcmp(argv[1], "servidor") == 0){
         int socketServer = cria_raw_socket(device);
         printf ("Você está no servidor\n");
+        int decide = 0;
         while (1){
-            struct kermit *pacote = receber_pacote(socketServer,mensagens,janela); //receber o primeiro pacote
-            process_resposta(socketServer,pacote,mensagens,janela);
+            struct kermit *pacote = receber_pacote(socketServer,decide,mensagens,janela); //receber o primeiro pacote
+            int sair = process_resposta(socketServer,pacote,decide,mensagens,janela);
             //printf("\033[H\033[J");
         }
         close(socketServer);
     }
-    if (argc > 1 && strcmp(argv[1], "cliente") == 0){
+    else if (argc > 1 && strcmp(argv[1], "cliente") == 0){
         int socketClient = cria_raw_socket(device);
         int sair = -1;
         printf ("Você está no cliente\n");
@@ -34,27 +35,40 @@ int main(int argc, char *argv[]){
             printf ("Você tem as seguintes opções: \n1.Listar\n2.Baixar\n3.Sair\nSelecione uma delas para continuar\n");
             scanf("%d",&option);
             printf("\033[H\033[J");
+            int decide = 0;
+            struct kermit *enviar;
             switch (option){
-            case 1:
-                printf ("\n\n\n\nVamos listar!\n\n");
-                enviar_pacote(socketClient,TIPO_LIST,0,NULL,anterior,mensagens);
-                while (sair != 3){
-                    struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
-                    sair = process_resposta(socketClient,pacote,mensagens,janela);
-                }
-
-                break;
-            case 2:
-                char nomeArquivo[64];
-                unsigned int bytesLidos = 0;
-                printf ("Digite o nome do arquivo que gostaria de baixar:");
-                scanf("%s%n",nomeArquivo,&bytesLidos);
-                enviar_pacote(socketClient,TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
-                while (sair != 4){
-                    struct kermit *pacote = receber_pacote(socketClient,mensagens,janela); //receber o primeiro pacote
-                    sair = process_resposta(socketClient,pacote,mensagens,janela);
-                }
-                break;
+                case 1:
+                    printf ("\n\n\n\nVamos listar!\n\n");
+                    enviar = montar_pacote(TIPO_LIST,0,NULL,anterior,mensagens);
+                    enviar_pacote(socketClient,0,enviar,mensagens);
+                    while (sair != 3){
+                        struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
+                        sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
+                        if (sair = TIPO_NACK){ //deu timeout ou é só um nack
+                            printf ("Ixi? Vou mandar de novo!\n");
+                            enviar_pacote(socketClient,0,enviar,mensagens);
+                            decide++;
+                        }
+                    }
+                    break;
+                case 2:
+                    char nomeArquivo[64];
+                    unsigned int bytesLidos = 0;
+                    printf ("Digite o nome do arquivo que gostaria de baixar:");
+                    scanf("%s%n",nomeArquivo,&bytesLidos);
+                    enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
+                    enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
+                    while (sair != FIM_TIMEOUT || TIPO_FIM){
+                        struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
+                        sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
+                        if (sair = TIPO_NACK){ //deu timeout ou é só um nack
+                            printf ("Ixi? Vou mandar de novo!\n");
+                            enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
+                            decide++;
+                        }
+                    }
+                    break;
             }
         }
         close(socketClient);

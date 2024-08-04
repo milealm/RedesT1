@@ -7,6 +7,8 @@
 #include <string>
 #include <cstring>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <filesystem>
 #include <list>
@@ -16,6 +18,7 @@
 #define PACOTE_MAX 68
 #define MARCADOR_DE_INICIO 126
 #define POLINOMIO 0x9B //10011011
+#define TIMEOUT_MILLIS 3000
 
 #define TIPO_ACK 0
 #define TIPO_NACK 1
@@ -26,6 +29,7 @@
 #define TIPO_DADOS 18
 #define TIPO_FIM 30
 #define TIPO_ERRO 31
+#define FIM_TIMEOUT 4
 
 struct __attribute__((packed)) kermit {
     unsigned int m_inicio : 8;   // marcador de inicio

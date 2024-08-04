@@ -8,8 +8,11 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
 
-void dadosType(int socket,std::ifstream& file,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
+void enviar_janela(int socket,std::list <struct kermit *>janela,std::list <struct kermmit*> mensagens);
+
+void dadosType(int socket,std::ifstream& file,std::list<struct kermit*>& mensagens);
 
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
+
 
 #endif //tipos.h
