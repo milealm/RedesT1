@@ -44,14 +44,16 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
             enviar_pacote(socket,0,enviar,mensagens);
         }
         else {
-            std::fstream file;
-            file.open(nomeArquivo, std::ios::out | std::ios::app);
-            if (!file){
-                printf ("falha ao abrir arquivo\n");
-                exit (1);
-            }
-            else{
-                file << elementoJan->dados;
+            if (elementoJan->type != TIPO_FIM && elementoJan->type == TIPO_DADOS){
+                std::fstream file;
+                file.open(nomeArquivo, std::ios::out | std::ios::app);
+                if (!file){
+                    printf ("falha ao abrir arquivo\n");
+                    exit (1);
+                }
+                else{
+                    file << elementoJan->dados;
+                }
             }
         }
     }
@@ -153,7 +155,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
                 if (pacoteJanela != NULL){  
                     while (pacoteJanela->type != TIPO_FIM || numJanela > 5){
-                        while (numJanela < 4){
+                        while (numJanela < 4 || pacote->type == TIPO_FIM){
                             janelaClient.push_back(pacoteJanela);
                             numJanela++;
                             printf ("adiciona janela %ld\n",janelaClient.size());
@@ -163,12 +165,13 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                         janelaClient.push_back(pacoteJanela);
                         numJanela++;
                         printf ("ultima janela %ld %d\n",janelaClient.size(),numJanela);
-                        if (janelaClient.size() == 5){
+                        if (janelaClient.size() == 5 || pacote->type == TIPO_FIM){
                             printf("sera ack ou nack?\n");
                             verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
                             numJanela = 0;
                         }
                     }
+                    printf ("acabou! da pra abrir o player eu acho k\n");
                 }
                 return TIPO_DESCREVE;
                 break;

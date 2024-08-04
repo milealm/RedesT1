@@ -145,7 +145,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[63];
-    for (int i = 0;i<6;i++){
+    for (int i = 0;i< numEnvios;i++){
         printf ("%d\n",i);
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
@@ -157,7 +157,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
         if (janela.size() < 5){
             struct kermit *elementoJan = montar_pacote(TIPO_DADOS,sizeof(dadosArquivo),dadosArquivo,anterior,mensagens);
             janela.push_back(elementoJan);
-            if (janela.size() == 5){
+            if (janela.size() == 5 || i == (numEnvios -1 )){
                 enviar_janela(socket,janela,mensagens);
             }
         }
