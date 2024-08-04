@@ -153,7 +153,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[63];
-    for (int i = 0;i< 25;i++){
+    for (int i = 0;i< numEnvios;i++){
         printf ("%d e janelaSize %ld\n",i,janela.size());
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
@@ -183,7 +183,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
-    printf ("%s\n e %d",pacote->dados,pacote->tam);
+    printf ("%s e %d\n",pacote->dados,pacote->tam);
     char *str1 = (char*)malloc(pacote->tam + 9 +1);
     struct kermit *anterior = NULL;
     strcpy(str1,"./Videos/");
