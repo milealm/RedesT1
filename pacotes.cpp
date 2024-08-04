@@ -59,12 +59,13 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 }
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
+    printf ("recebi algo! vamos processar!!");
     std::list <struct kermit*> janelaClient = {0};
     if (pacote == NULL && decide == 4){
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
     }
     else if (pacote == NULL && decide < 4){
-        //printf ("não chegou ainda, vou enviar um nack");
+        printf ("não chegou ainda, vou enviar um nack");
         return TIPO_NACK; //nack
     }
     else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
@@ -241,13 +242,13 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     struct kermit *pacoteMontado = new(struct kermit);
     unsigned int byte;  
     unsigned int byteShiftado;
-    ssize_t byes_recebidos = 0;
+    ssize_t bytes_recebidos = 0;
     int timeoutDaVez = 1;
     for (int j = 0; j <= demora; j++){
         timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS; //exponencial
     }
-    while (timestamp() - comeco <= timeoutDaVez){
-        byes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
+    while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos > 0){
+        bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     }
     if (timestamp()- comeco > timeoutDaVez){
         if (demora == 4){
@@ -258,8 +259,8 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         //printf ("demorou por demais, vou tentar de novo\n");
         return NULL;
     }
-    printf("byte_recebidos: %ld\n",byes_recebidos);
-    if (byes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
+    printf("byte_recebidos: %ld\n",bytes_recebidos);
+    if (bytes_recebidos < 4){ //menor mensagem, com todos os pacotes, é 4 bytes
         perror ("Erro ao receber mensagem\n");
         //não é um dos meus pacotes, então nem faço nada, só volto a escutar;
         return NULL;
