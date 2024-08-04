@@ -21,6 +21,7 @@ int main(int argc, char *argv[]){
         printf ("Você está no servidor\n");
         int decide = 0;
         while (1){
+            printf ("\n\nvoltei para o menu!!\n");
             struct kermit *pacote = receber_pacote(socketServer,decide,mensagens,janela); //receber o primeiro pacote
             if (pacote != NULL){
                 int sair = process_resposta(socketServer,pacote,decide,mensagens,janela);
