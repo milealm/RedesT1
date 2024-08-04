@@ -73,4 +73,5 @@ int main(int argc, char *argv[]){
         }
         close(socketClient);
     }
+    return 0;
 }

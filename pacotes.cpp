@@ -64,7 +64,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
     }
     else if (pacote == NULL && decide < 4){
-        printf ("não chegou ainda, vou enviar um nack");
+        //printf ("não chegou ainda, vou enviar um nack");
         return TIPO_NACK; //nack
     }
     else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
@@ -255,7 +255,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
             return NULL;
         }
         //retorna com indicativo que tem que enviar denovo;
-        printf ("demorou por demais, vou tentar de novo\n");
+        //printf ("demorou por demais, vou tentar de novo\n");
         return NULL;
     }
     printf("byte_recebidos: %ld\n",byes_recebidos);
