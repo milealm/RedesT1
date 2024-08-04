@@ -81,7 +81,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
     else{
         struct kermit *enviar;
         int demora = 0;
-        int numJanela = 1;
+        int numJanela = 0;
         struct kermit *pacoteJanela;
         switch (pacote->type){
             case TIPO_ACK:
@@ -149,14 +149,16 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
                 pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
                 if (pacoteJanela != NULL){  
-                    while (pacoteJanela->type != TIPO_FIM){
-                        while (janelaClient.size() < 5){
+                    while (pacoteJanela->type != TIPO_FIM || numJanela > 5){
+                        while (numJanela < 5){
                             janelaClient.push_back(pacoteJanela);
+                            numJanela++;
                             printf ("adiciona janela %ld\n",janelaClient.size());
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela);
                             printf ("recebi!\n");
                         }
                         janelaClient.push_back(pacoteJanela);
+                        numJanela++;
                         printf ("ultima janela\n");
                         if (janelaClient.size() == 5){
                             printf("sera ack ou nack?\n");
