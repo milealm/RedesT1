@@ -201,7 +201,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                     //printf ("proximo\n");
                 }
                 printf ("acabou! da pra abrir o player eu acho k\n");
-                return TIPO_DESCREVE;
+                return TIPO_FIM;
                 break;
 
             case TIPO_FIM:

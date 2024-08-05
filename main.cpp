@@ -57,13 +57,13 @@ int main(int argc, char *argv[]){
                     break;
                 case 2:
                     char nomeArquivo[63];
-                    unsigned int bytesLidos = 14;
+                    unsigned int bytesLidos = 13;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
-                    strcpy(nomeArquivo,"videoJoia.mp4");
+                    strcpy(nomeArquivo,"suspeito.mp4");
                     //scanf("%s%n",nomeArquivo,&bytesLidos);
                     enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                     enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
-                    while (sair != FIM_TIMEOUT || TIPO_FIM){
+                    while (sair != FIM_TIMEOUT && sair != TIPO_FIM){
                         struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
                         sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
                         if (sair == TIPO_NACK){ //deu timeout ou é só um nack
