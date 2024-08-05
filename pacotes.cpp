@@ -57,7 +57,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     char bufferSemExtra[31];
                     int i = 0;
                     int j = 0;
-                    while(i < 134){
+                    while(i < 64){
                         bufferSemExtra[i] = buffer[j];
                         i++;
                         j+=2;
