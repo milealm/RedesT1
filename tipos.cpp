@@ -162,17 +162,18 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     struct kermit *elementoJan = NULL;
     while (!file.eof()){
         file.read(dadosArquivo,sizeof(dadosArquivo));
+        std::streamsize arqLido = file.gcount();
+        int arqLidoInt = static_cast<int>(arqLido);
         int i = 0;
         int j = 0;
         while(i < 64){
             dadosExtrabyte[i] = dadosArquivo[j];
             dadosExtrabyte[i+1] = 0xFF;
+            printf ("j %d\n",j);
             i+=2;
             j++;
         }
-        std::streamsize arqLido = file.gcount();
         // Converter para int se necessário
-        int arqLidoInt = static_cast<int>(arqLido);
         printf ("arqLidoInt %ld\n",arqLido);
         if (!mensagens.empty()){
             anterior = mensagens.back();

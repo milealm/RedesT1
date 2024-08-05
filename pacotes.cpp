@@ -53,7 +53,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                 }
                 else{
                     char buffer[63];
-                    memcpy(buffer, elementoJan->dados, sizeof(elementoJan->dados));
+                    memcpy(buffer, elementoJan->dados, elementoJan->tam);
                     char bufferSemExtra[31];
                     int i = 0;
                     int j = 0;
