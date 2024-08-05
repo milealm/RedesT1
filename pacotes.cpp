@@ -55,8 +55,16 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     char buffer[63];
                     memcpy(buffer, elementoJan->dados, sizeof(elementoJan->dados));
                     printf ("%s\n",buffer);
+                    char bufferSemExtra[31];
+                    int i = 0;
+                    int j = 0;
+                    while(i < 134){
+                        bufferSemExtra[i] = buffer[j];
+                        i++;
+                        j+=2;
+                    }
                     //buffer[65] = '\0'; // Adicione o caractere nulo
-                    file.write(buffer, strlen(buffer)); // Use write para evitar escrever caracteres extras
+                    file.write(bufferSemExtra, strlen(bufferSemExtra)); // Use write para evitar escrever caracteres extras
                     //file << elementoJan->dados;
                 }
             }
