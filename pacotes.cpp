@@ -65,6 +65,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
             }
         }
     }
+    janela.clear();
     printf ("ack!\n");
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,elementoJan,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
