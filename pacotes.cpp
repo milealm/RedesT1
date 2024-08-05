@@ -186,6 +186,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                         }
                         printf ("num seq %d\n",pacoteJanela->seq);
                         if (!janelaClient.empty()){
+                            printf ("janela front seq e pacoteRecebido %d\n",janelaClient.front()->seq, pacoteJanela->seq);
                             if (janelaClient.front()->seq < pacoteJanela->seq){
                                 janelaClient.clear();
                                 pacoteJanela = NULL;
