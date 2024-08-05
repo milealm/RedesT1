@@ -163,7 +163,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     while (!file.eof()){
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
-        printf ("-- %s --\n",dadosArquivo);
+        //printf ("-- %s --\n",dadosArquivo);
         int arqLidoInt = static_cast<int>(arqLido);
         int i = 0;
         int j = 0;
@@ -175,7 +175,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
             j++;
         }
         // Converter para int se necessário
-        printf ("arqLidoInt %ld\n",arqLido);
+        //printf ("arqLidoInt %ld\n",arqLido);
         if (!mensagens.empty()){
             anterior = mensagens.back();
         }
@@ -240,7 +240,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
             struct kermit *pacoteMontado = receber_pacote(socket,demora,mensagens,janela);
             printf ("teste\n");
             result = process_resposta(socket,pacoteMontado,demora,mensagens,janela);
-            printf ("ainda aqui? result %d\n",result);
+            //printf ("ainda aqui? result %d\n",result);
             if (demora == 4 && result == FIM_TIMEOUT){
                 printf ("Não foi possível receber esta mensagem :(");
                 break;
