@@ -186,8 +186,8 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                         }
                         printf ("num seq %d\n",pacoteJanela->seq);
                         if (!janelaClient.empty()){
-                            printf ("janela front seq %d e pacoteRecebido %d\n",janelaClient.front()->seq, pacoteJanela->seq);
-                            if ((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0)) ){
+                            printf ("janela front seq %d e pacoteRecebido %d\n",janelaClient.back()->seq, pacoteJanela->seq);
+                            if ((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0)) && (demora > 1)){
                                 printf ("limpa limpa tudo\n");
                                 janelaClient.clear();
                                 pacoteJanela = NULL;
@@ -199,8 +199,8 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             janelaClient.push_back(pacoteJanela);
                         }
                         numJanela++;
+                        demora = 0;
                     }
-                    demora = 0;
                     //janelaClient.push_back(pacoteJanela);
                     numJanela++;
                     if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
