@@ -187,12 +187,14 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                         printf ("num seq %d\n",pacoteJanela->seq);
                         if (!janelaClient.empty()){
                             printf ("janela front seq %d e pacoteRecebido %d\n",janelaClient.front()->seq, pacoteJanela->seq);
-                            if ((janelaClient.front()->seq != (pacoteJanela->seq-1)) || (janelaClient.front()->seq == 31 && pacoteJanela->seq != 0) ){
+                            if ((janelaClient.back()->seq != (pacoteJanela->seq-1)) || (janelaClient.back()->seq == 31 && pacoteJanela->seq != 0) ){
+                                printf ("limpa limpa tudo\n");
                                 janelaClient.clear();
                                 pacoteJanela = NULL;
                             }
                         }
                         if (pacoteJanela != NULL){
+                            printf ("coloca na janela\n");
                             janelaClient.push_back(pacoteJanela);
                         }
                         numJanela++;
