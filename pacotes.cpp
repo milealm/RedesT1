@@ -190,11 +190,10 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
                                 printf ("limpa limpa tudo\n");
                                 janelaClient.clear();
-                                pacoteJanela = NULL;
                                 printf ("aqui?\n");
                             }
                         }
-                        if (pacoteJanela != NULL){
+                        if (demora <= 1){
                             printf ("coloca na janela\n");
                             janelaClient.push_back(pacoteJanela);
                         }
