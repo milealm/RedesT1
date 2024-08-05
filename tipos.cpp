@@ -163,13 +163,14 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     while (!file.eof()){
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
+        printf ("-- %s --\n",dadosArquivo);
         int arqLidoInt = static_cast<int>(arqLido);
         int i = 0;
         int j = 0;
         while(i < 64){
             dadosExtrabyte[i] = dadosArquivo[j];
             dadosExtrabyte[i+1] = 0xFF;
-            printf ("j %d\n",j);
+            //printf ("j %d\n",j);
             i+=2;
             j++;
         }
