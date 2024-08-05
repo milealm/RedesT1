@@ -183,8 +183,8 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                         verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
                         numJanela = 0;
                     }
-                    printf ("acabou! da pra abrir o player eu acho k\n");
                 }
+                printf ("acabou! da pra abrir o player eu acho k\n");
                 return TIPO_DESCREVE;
                 break;
 

@@ -158,6 +158,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[63];
+    struct kermit *elementoJan = NULL;
     for (int i = 0;i< numEnvios;i++){
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
@@ -167,10 +168,17 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
             anterior = mensagens.back();
         }
         if (janela.size() < 5){
-            struct kermit *elementoJan = montar_pacote(TIPO_DADOS,sizeof(dadosArquivo),dadosArquivo,anterior,mensagens);
+            elementoJan = montar_pacote(TIPO_DADOS,sizeof(dadosArquivo),dadosArquivo,anterior,mensagens);
             janela.push_back(elementoJan);
             printf ("\n%d e janelaSize %ld\n",i,janela.size());
             if (janela.size() == 5 || i == (numEnvios -1 )){
+                if (i == (numEnvios -1)){
+                    if (!mensagens.empty()){
+                        anterior = mensagens.back();
+                    }
+                    elementoJan = montar_pacote(TIPO_FIM,0,NULL,anterior,mensagens);
+                    janela.push_back(elementoJan);
+                }
                 printf ("não entrou aqui?\n");
                 enviar_janela(socket,janela,mensagens);
             }
@@ -180,9 +188,9 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     if (!mensagens.empty()){
         anterior = mensagens.back();
     }
-    struct kermit *enviar = montar_pacote(TIPO_FIM,0,NULL,anterior,mensagens);
-    enviar_pacote(socket,0,enviar,mensagens);
-    printf ("enviei o FIM\n");
+    // struct kermit *enviar = montar_pacote(TIPO_FIM,0,NULL,anterior,mensagens);
+    // enviar_pacote(socket,0,enviar,mensagens);
+    // printf ("enviei o FIM\n");
 }
 
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
