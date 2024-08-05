@@ -54,7 +54,6 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                 else{
                     char buffer[63];
                     memcpy(buffer, elementoJan->dados, sizeof(elementoJan->dados));
-                    printf ("%s\n",buffer);
                     char bufferSemExtra[31];
                     int i = 0;
                     int j = 0;
@@ -183,11 +182,9 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                         }
                         janelaClient.push_back(pacoteJanela);
                         numJanela++;
-                        printf ("tamanho janela %ld\n",janelaClient.size());
                     }
                     //janelaClient.push_back(pacoteJanela);
                     numJanela++;
-                    printf ("ultima janela %ld %d\n",janelaClient.size(),numJanela);
                     if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
                         printf("sera ack ou nack?\n");
                         verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);

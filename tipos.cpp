@@ -178,7 +178,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
             anterior = mensagens.back();
         }
         if (janela.size() < 5){
-            elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 32,dadosExtrabyte,anterior,mensagens);
+            elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 31,dadosExtrabyte,anterior,mensagens);
             janela.push_back(elementoJan);
             if (janela.size() == 5 || file.eof()){
                 if (file.eof()){
