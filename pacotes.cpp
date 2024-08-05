@@ -189,11 +189,13 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                     if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
                         printf("sera ack ou nack?\n");
                         verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
+                        printf ("antes\n");
                         if (pacoteJanela->type == TIPO_FIM){
                             numJanela = 6;
                         }
                         else{
                             numJanela = 0;
+                            printf ("aqui\n");
                         }
                     }
                     printf ("proximo\n");
