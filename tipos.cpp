@@ -115,9 +115,18 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
     }
     int demora = 0;
     struct kermit *pacote = NULL;
-    while (pacote == NULL){
+    while (pacote == NULL && demora<5){
         printf ("esperando...\n");
         pacote = receber_pacote(socket,demora,mensagens,janela);
+        demora++;
+    }
+    if (demora == 5){
+        for (struct kermit *elemento :janela){
+        if (elemento != NULL){
+            //printf ("%s \n",(char*)elemento->dados);
+            enviar_pacote(socket,elemento->tam,elemento,mensagens);
+        }
+    }
     }
     int result = process_resposta(socket,pacote,demora,mensagens,janela);
     printf ("result %d\n",result);
@@ -160,7 +169,10 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     char dadosArquivo[31];
     char dadosExtrabyte[63];
     struct kermit *elementoJan = NULL;
+    int i = 0;
     while (!file.eof()){
+        printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,i);
+        i = i + 32;
         file.read(dadosArquivo,sizeof(dadosArquivo));
         std::streamsize arqLido = file.gcount();
         //printf ("-- %s --\n",dadosArquivo);

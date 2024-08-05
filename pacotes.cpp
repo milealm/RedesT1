@@ -35,7 +35,9 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
 
 void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela){
     struct kermit *elementoJan;
+    int i = 0;
     while (!janelaClient.empty()){
+        printf ("i%d\n",i);
         elementoJan = janelaClient.front();
         janelaClient.pop_front(); 
         if (elementoJan->m_inicio != 126){ //incluir checagem crc
