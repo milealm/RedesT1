@@ -185,10 +185,13 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             demora++;
                         }
                         printf ("num seq %d\n",pacoteJanela->seq);
-                        if (janelaClient.front()->seq < pacoteJanela->seq){
-                            janelaClient.clear();
+                        if (!janelaClient.empty()){
+                            if (janelaClient.front()->seq < pacoteJanela->seq){
+                                janelaClient.clear();
+                                pacoteJanela = NULL;
+                            }
                         }
-                        else {
+                        if (pacoteJanela != NULL){
                             janelaClient.push_back(pacoteJanela);
                         }
                         numJanela++;
