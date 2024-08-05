@@ -35,9 +35,7 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
 
 void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela){
     struct kermit *elementoJan;
-    int i = 0;
     while (!janelaClient.empty()){
-        printf ("i%d\n",i);
         elementoJan = janelaClient.front();
         janelaClient.pop_front(); 
         if (elementoJan->m_inicio != 126){ //incluir checagem crc
@@ -177,11 +175,16 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 }
                 janelaClient.push_back(pacoteJanela);
                 numJanela++;
+                demora = 0;
                 while (numJanela < 5){
                     while ((janelaClient.size() < 5 && pacoteJanela->type != TIPO_FIM)){
                         pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                        while(pacoteJanela == NULL){
+                        while(pacoteJanela == NULL && demora < 4){
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
+                            demora++;
+                        }
+                        if (demora == 3){
+                            janelaClient.clear();
                         }
                         janelaClient.push_back(pacoteJanela);
                         numJanela++;

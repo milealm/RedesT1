@@ -107,26 +107,28 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 
 void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> &mensagens){
     printf ("size janela %ld\n",janela.size());
-    for (struct kermit *elemento :janela){
-        if (elemento != NULL){
-            //printf ("%s \n",(char*)elemento->dados);
-            enviar_pacote(socket,elemento->tam,elemento,mensagens);
-        }
-    }
-    int demora = 0;
     struct kermit *pacote = NULL;
-    while (pacote == NULL && demora<5){
-        printf ("esperando...\n");
-        pacote = receber_pacote(socket,demora,mensagens,janela);
-        demora++;
-    }
-    if (demora == 5){
+    int demora = 0;
+    while (pacote == NULL){
         for (struct kermit *elemento :janela){
-        if (elemento != NULL){
-            //printf ("%s \n",(char*)elemento->dados);
-            enviar_pacote(socket,elemento->tam,elemento,mensagens);
+            if (elemento != NULL){
+                //printf ("%s \n",(char*)elemento->dados);
+                enviar_pacote(socket,elemento->tam,elemento,mensagens);
+            }
         }
-    }
+        while (pacote == NULL && demora < 4){
+            printf ("esperando...\n");
+            pacote = receber_pacote(socket,demora,mensagens,janela);
+            demora++;
+        }
+        if (demora == 3){
+            for (struct kermit *elemento :janela){
+                if (elemento != NULL){
+                    //printf ("%s \n",(char*)elemento->dados);
+                    enviar_pacote(socket,elemento->tam,elemento,mensagens);
+                }
+            }
+        }
     }
     int result = process_resposta(socket,pacote,demora,mensagens,janela);
     printf ("result %d\n",result);
