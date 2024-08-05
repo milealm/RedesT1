@@ -80,7 +80,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 }
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
-    printf ("recebi algo! vamos processar!!\n");
+    //printf ("recebi algo! vamos processar!!\n");
     std::list <struct kermit*> janelaClient;
     if (pacote == NULL && decide == 4){
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
@@ -148,7 +148,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 printf ("Eu acho que vi um BAIXAR\n");
                 //vou mandar um descritor de arquivo depois de mandar um ACK
                 baixarType(socket,pacote,mensagens,janela);
-                printf ("voltou?\n");
+                //printf ("voltou?\n");
                 return TIPO_BAIXAR;
                 break;
 
@@ -187,7 +187,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                     //janelaClient.push_back(pacoteJanela);
                     numJanela++;
                     if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
-                        printf("sera ack ou nack?\n");
+                        //printf("sera ack ou nack?\n");
                         verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
                         //printf ("antes\n");
                         if (pacoteJanela->type == TIPO_FIM){
@@ -275,7 +275,7 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
         exit (-1);
     }
     else{
-        printf ("pacotes: %ld enviados com sucesso!\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
+        //printf ("pacotes: %ld enviados com sucesso!\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
     }
     //imprimirFilas(mensagens,janela);
 }
