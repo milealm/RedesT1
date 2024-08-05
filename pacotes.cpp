@@ -76,6 +76,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
     printf ("ack!\n");
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,elementoJan,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
+    printf ("enviei um ack!\n");
 }
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -195,6 +196,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                             numJanela = 0;
                         }
                     }
+                    printf ("proximo\n");
                 }
                 printf ("acabou! da pra abrir o player eu acho k\n");
                 return TIPO_DESCREVE;
