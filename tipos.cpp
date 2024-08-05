@@ -116,18 +116,20 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
                 enviar_pacote(socket,elemento->tam,elemento,mensagens);
             }
         }
-        while (pacote == NULL && demora < 4){
-            printf ("esperando...\n");
+        while (pacote == NULL && demora <= 2){
+            printf ("esperando... %d\n",demora);
             pacote = receber_pacote(socket,demora,mensagens,janela);
             demora++;
         }
-        if (demora == 3){
+        if (demora > 2){
+            printf ("vou reenviar\n");
             for (struct kermit *elemento :janela){
                 if (elemento != NULL){
                     //printf ("%s \n",(char*)elemento->dados);
                     enviar_pacote(socket,elemento->tam,elemento,mensagens);
                 }
             }
+            demora = 0;
         }
     }
     int result = process_resposta(socket,pacote,demora,mensagens,janela);
