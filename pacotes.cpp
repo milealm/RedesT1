@@ -179,15 +179,14 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 while (numJanela < 5){
                     while ((janelaClient.size() < 5 && pacoteJanela->type != TIPO_FIM)){
                         pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                        while(pacoteJanela == NULL && demora <= 2){
+                        while(pacoteJanela == NULL){
                             printf ("esperando..%d\n",demora);
                             pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
                             demora++;
-                        }
-                        if (demora > 2){
-                            printf ("mesma coisa\n");
-                            janelaClient.clear();
-                            demora = 0;
+                            if (demora > 2){
+                                printf ("mesma coisa\n");
+                                demora = 0;
+                            }
                         }
                         janelaClient.push_back(pacoteJanela);
                         numJanela++;

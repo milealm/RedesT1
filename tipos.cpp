@@ -122,13 +122,13 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
             demora++;
         }
         if (demora > 2){
-            printf ("vou reenviar\n");
-            for (struct kermit *elemento :janela){
-                if (elemento != NULL){
-                    //printf ("%s \n",(char*)elemento->dados);
-                    enviar_pacote(socket,elemento->tam,elemento,mensagens);
-                }
-            }
+            // printf ("vou reenviar\n");
+            // for (struct kermit *elemento :janela){
+            //     if (elemento != NULL){
+            //         //printf ("%s \n",(char*)elemento->dados);
+            //         enviar_pacote(socket,elemento->tam,elemento,mensagens);
+            //     }
+            // }
             demora = 0;
         }
     }
