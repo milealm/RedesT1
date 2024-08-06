@@ -227,9 +227,12 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->dados != 0){
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
-    buffer[PACOTE_MAX-1] = pacote->crc;
+    //buffer[PACOTE_MAX-1] = pacote->crc;
     int crc = codigo_crc(buffer);
     buffer[PACOTE_MAX-1] = crc;
+    printf ("ENVIANDO...");
+    print_buffer(buffer,PACOTE_MAX);
+    printf ("inicio: %d, tam: %d, seq: %d, crc: %d\n\n", pacote->m_inicio,pacote->tam,pacote->seq, buffer[PACOTE_MAX-1]);
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
@@ -271,6 +274,8 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
         int crc = codigo_crc(pacote_recebido);
+        print_buffer(pacote_recebido,PACOTE_MAX);
+        printf ("inicio: %d, tam: %d, seq: %d, crc: %d e %d, crcCalculado: %d\n\n", pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq,pacoteMontado->crc, pacote_recebido[PACOTE_MAX-1],crc);
         if (crc != pacoteMontado->crc){
             struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,pacoteMontado,mensagens);
             enviar_pacote(socket,0,enviar,mensagens);
@@ -278,5 +283,15 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         }
         return pacoteMontado;
     }    
+}
+
+void print_buffer(unsigned char* buffer, int length) {
+    for (size_t i = 0; i < length; i++) {
+        printf("%02X ", buffer[i]);
+        if ((i + 1) % 16 == 0) {
+            printf("\n"); // Adiciona uma nova linha a cada 16 bytes para melhor legibilidade
+        }
+    }
+    printf("\n"); // Adiciona uma nova linha ao final para separação
 }
 
