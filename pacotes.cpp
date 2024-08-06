@@ -253,6 +253,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         return NULL;
     }
     else{
+        print_hex((char*)pacote_recebido,PACOTE_MAX);
         memcpy(pacoteMontado,pacote_recebido,3);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         int crc = codigo_crc(pacote_recebido);
