@@ -100,6 +100,8 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
+            print_hex((char*)elemento->dados,sizeof(elemento->dados));
+
         }
     }
     while (pacote == NULL){
@@ -176,7 +178,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
             int arqLidoInt = static_cast<int>(arqLido);
             int i = 0;
             int j = 0;
-            print_hex(dadosArquivo,sizeof(dadosArquivo));
+            //print_hex(dadosArquivo,sizeof(dadosArquivo));
             // while(i < 64){
             //     dadosExtrabyte[i] = dadosArquivo[j];
             //     dadosExtrabyte[i+1] = 0xFF;
@@ -328,11 +330,11 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
     while (!janelaClient.empty()){
         elementoJan = janelaClient.front();
         janelaClient.pop_front(); 
-        if (elementoJan->m_inicio != 126){ //incluir checagem crc
-            struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,elementoJan,mensagens);
-            enviar_pacote(socket,0,enviar,mensagens);
-        }
-        else {
+        // if (elementoJan->m_inicio != 126){ //incluir checagem crc
+        //     struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,elementoJan,mensagens);
+        //     enviar_pacote(socket,0,enviar,mensagens);
+        // }
+        // else {
             if (elementoJan->type != TIPO_FIM && elementoJan->type == TIPO_DADOS){
                 std::fstream file;
                 file.open(nomeArquivo, std::ios::out | std::ios::app);
@@ -342,6 +344,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                 }
                 else{
                     char buffer[64];
+                    print_hex((char*)elementoJan->dados,sizeof(elementoJan->dados));
                     memcpy(buffer, elementoJan->dados,64);
                     char bufferSemExtra[32];
                     int i = 0;
@@ -351,11 +354,11 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     //     i++;
                     //     j+=2;
                     // }
-                    print_hex(buffer, 64);
+                    //print_hex(buffer, 64);
                     file.write(buffer, elementoJan->tam); // Use write para evitar escrever caracteres extras
                 }
             }
-        }
+        //}
     }
     janela.clear();
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,elementoJan,mensagens);
