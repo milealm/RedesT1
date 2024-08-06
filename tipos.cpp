@@ -34,23 +34,24 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                         if (!mensagens.empty()){
                             anterior = mensagens.back();
                         }
+                        int volta = 0;
                         while (result != TIPO_ACK ){
-                            if (result == TIPO_NACK){
+                            if (result == TIPO_NACK || (pacote == NULL && volta > 0)){ //envio de novo se receber nack ou se não receber a mensagem
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
                             printf ("Enviando Mostra!\n");
                             struct kermit *enviar = montar_pacote(TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens);
                             enviar_pacote(socket,lengthAsInt,enviar,mensagens);
                             struct kermit *pacoteMontado = NULL;
-                            while (pacoteMontado == NULL){
-                                pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
-                            }
+                            printf ("aguardo resposta...\n");
+                            pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
                             result = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
                             if (decide == 4 || result == FIM_TIMEOUT){
                                 printf ("não vou possível receber este pacote\n");
                                 break;
                             }
                             decide++;
+                            volta++;
                         }
                         result = -1;
                         //recebi o ack, vou continuar a mandar
@@ -62,46 +63,46 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
         printf ("Por hoje é isso pessoal!\n");
         result = -1;
         decide = 0;
+        int volta = 0;
         if (!mensagens.empty()){
             anterior = mensagens.back();
         }
         while (result != TIPO_ACK ){
-            if (result == TIPO_NACK){
+            if (result == TIPO_NACK || (pacote == NULL && volta > 0)){ //vai reenviar, tira da filta
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
             printf ("Enviando Fim!\n");
             enviar = montar_pacote(TIPO_FIM,1,NULL,anterior,mensagens);
+            printf ("Aguardando ultima mensagem...\n");
             enviar_pacote(socket,1,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
             result = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
             if (decide == 4 || result == FIM_TIMEOUT){
-                printf ("não vou possível receber este pacote\n");
+                printf ("não foi possível receber este pacote\n");
                 break;
             }
             decide++;
+            volta++;
         }
-        //vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
-    // } catch (const std::filesystem::filesystem_error& err) {
-        
-    // }
 }
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //envia um ack, agora vou printar oq eu recebi
     //quando eu colocar os times eu testo o nack
-    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
-    enviar_pacote(socket,0,enviar,mensagens);
-    printf ("Nome: %s \n",pacote->dados);
-    int decide = 0;
-    int status = 0;
-    while (status != TIPO_ACK || decide<4){
-        struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //para receber os próximos nomes de arquivo ou um fim de tx
-        status = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
-        if (decide == 4 || status == FIM_TIMEOUT){
-            printf ("Não foi possível receber este pacote\n");
-            break;
+    int status = pacote->type;
+    if (status != TIPO_FIM){
+        struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //ack
+        enviar_pacote(socket,0,enviar,mensagens);
+        printf ("enviei o ack!\n");
+        printf ("Nome: %s \n",pacote->dados);
+        int decide = 0;
+        int status = 0;
+        int volta = 0;
+        struct kermit *pacoteMontado = NULL;
+        while (pacote == NULL){
+            pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //aqui eu só espero
         }
-        decide ++;
+        status = process_resposta(socket,pacoteMontado,decide,mensagens,janela); //vou chamar outro mostra
     }
 }
 

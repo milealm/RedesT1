@@ -173,7 +173,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //o que o cliente recebe para saber que o vídeo já foi todo mandado e dá para dar play no que foi enviado
                 if (pacote->tam == 1){ //fim 
                     printf ("Esses são todos os arquivos disponíveis\n");
-                    return TIPO_MOSTRA;
+                    return TIPO_FIM;
                 }
                 else{
                     printf ("hora de abrir o player :)\n");
