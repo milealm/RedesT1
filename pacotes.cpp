@@ -203,8 +203,9 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 enviar_pacote(socket,0,enviar,mensagens);
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
                 status = descreveType(socket,pacote,mensagens,janela);
-                abrir_video(pacote,pacote->tam);
-
+                if (status == 0){
+                    abrir_video(pacote,pacote->tam);
+                }
                 return TIPO_FIM;
                 break;
 

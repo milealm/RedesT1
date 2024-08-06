@@ -320,6 +320,11 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
                 printf ("esperando..%d\n",demora);
                 pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
                 demora++;
+                if (demora > 3){
+                    printf ("TIMEOUT. Saindo...\n");
+                    return FIM_TIMEOUT;
+                }
+
             }
             printf ("num seq %d\n",pacoteJanela->seq);
             if (!janelaClient.empty()){
