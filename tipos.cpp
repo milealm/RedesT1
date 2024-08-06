@@ -103,6 +103,8 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
             printf ("esperando...\n");
             pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //aqui eu só espero
             if (pacoteMontado->seq == pacote->seq){
+                enviar = montar_pacote(TIPO_ACK,0,NULL,pacoteMontado,mensagens); //
+                enviar_pacote(socket,0,enviar,mensagens);
                 pacoteMontado==NULL;
             }
         }
