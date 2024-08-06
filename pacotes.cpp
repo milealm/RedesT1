@@ -58,6 +58,7 @@ void abrir_video (struct kermit *pacote, int tamanho){
     } else {
         std::cout << "Vídeo aberto com sucesso." << std::endl;
     }
+    printf ("voltando ao menu...\n");
 }
 
 void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela){
