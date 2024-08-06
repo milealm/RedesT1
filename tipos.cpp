@@ -121,7 +121,7 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
             break;
         }
     }
-    printf("\033[H\033[J");
+    //printf("\033[H\033[J");
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
         if (pacote != NULL){
@@ -181,8 +181,9 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
                 dadosExtrabyte[i+1] = 0xFF;
                 i+=2;
                 j++;
-                printf ("j %d\n",j);
+                //printf ("j %d\n",j);
             }
+            i=0;
             if (!mensagens.empty()){
                 anterior = mensagens.back();
             }
@@ -190,7 +191,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
                 if (!janela.empty()){
                     anterior = janela.back();
                 }
-                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 31,dadosExtrabyte,anterior,mensagens);
+                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 32,dadosExtrabyte,anterior,mensagens);
                 janela.push_back(elementoJan);
                 if (janela.size() == 5 || file.eof()){
                     if (file.eof()){
@@ -294,7 +295,7 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
                 }
 
             }
-            printf("\033[H\033[J");
+            //printf("\033[H\033[J");
             if (!janelaClient.empty()){
                 if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
                     janelaClient.clear();

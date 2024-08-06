@@ -82,9 +82,9 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     exit (1);
                 }
                 else{
-                    char buffer[63];
+                    char buffer[64];
                     memcpy(buffer, elementoJan->dados,64);
-                    char bufferSemExtra[31];
+                    char bufferSemExtra[32];
                     int i = 0;
                     int j = 0;
                     while(i < 64){
@@ -92,7 +92,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                         i++;
                         j+=2;
                     }
-                    file.write(bufferSemExtra, elementoJan->tam-31); // Use write para evitar escrever caracteres extras
+                    file.write(bufferSemExtra, elementoJan->tam-32); // Use write para evitar escrever caracteres extras
                 }
             }
         }
