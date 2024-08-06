@@ -145,14 +145,6 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
             else if (pacote->type == TIPO_NACK || result == 1){
                 printf ("recebi um nack\n");
                 int numSequencia = pacote->seq;
-                // for (auto it = janela.begin(); it != janela.end(); ) {
-                //     if ((*it)->seq < numSequencia) {
-                //         // Remove o elemento da lista e obtém o próximo iterador
-                //         it = janela.erase(it);
-                //     } else {
-                //         ++it;
-                //     }
-                // }
                 for (auto it = mensagens.begin(); it != mensagens.end(); ){
                     if ((*it)->seq < numSequencia){
                         it = mensagens.erase(it);
@@ -160,6 +152,7 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
                         ++it;
                     }
                 }
+                pacote=NULL;
             }
         }
     }

@@ -8,14 +8,21 @@ long long timestamp() {
     return tp.tv_sec*1000 + tp.tv_usec/1000;
 }
 
-int codigo_crc(char *dadosArquivo, int bytesLidos){
-    // for (int i = 0;i< bytesLidos;i++){
-    //     char byte = dadosArquivo[i];
-    //     for (int j = 7; i>=0;i--){ //indo bit a bit
+int codigo_crc(unsigned char *buffer){
+    unsigned char crc = 0; // Inicializa o CRC
+    for (int i = 0; i < PACOTE_MAX -1; i++) {
+        crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
-    //     }
-    // }
-    return 0;
+        for (int j = 0; j < 8; j++) { // Processar cada bit
+            if (crc & 0x80) { // Se o bit mais significativo for 1
+                crc = (crc << 1) ^ 0x7; // Desloca à esquerda e aplica o polinômio
+            } else {
+                crc <<= 1; // Apenas desloca à esquerda
+            }
+        }
+    }
+    //printf ("crc %d\n",crc);    
+    return crc; // Retorna o CRC calculados
 }
 
 void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -92,13 +99,13 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
     else if (pacote->m_inicio == 0){
         return -1; //sorrie e acene, continue ouvindo
     }
-    else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
-        printf("aqui?");
-        struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,NULL,mensagens);
-        enviar_pacote(socket,0,enviar,mensagens);//tem que resolver o numero de sequencia
-        return TIPO_NACK;
-        //função para colocar na parte de dados o tipo de erro que deu para imprimir
-    }
+    // else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
+    //     printf("aqui?");
+    //     struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,NULL,mensagens);
+    //     enviar_pacote(socket,0,enviar,mensagens);//tem que resolver o numero de sequencia
+    //     return TIPO_NACK;
+    //     //função para colocar na parte de dados o tipo de erro que deu para imprimir
+    // }
     else{
         struct kermit *enviar;
         int demora = 0;
@@ -303,13 +310,14 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     
     unsigned char pacote_recebido[PACOTE_MAX] = {0};
     struct kermit *pacoteMontado = new(struct kermit);
+    pacoteMontado == NULL;
     unsigned int byte;  
     unsigned int byteShiftado;
     ssize_t bytes_recebidos = 0;
     int timeoutDaVez = 1;
-    //for (int j = 0; j <= demora; j++){
-        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * (demora+1); //exponencial
-    //}
+    for (int j = 0; j <= demora; j++){
+        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * j; //exponencial
+    }
     while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos <= 0){
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     }
@@ -330,6 +338,13 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     }
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
+        pacoteMontado == NULL;
+        if (pacoteMontado->m_inicio != 126){
+            int decide = 0;
+            while (pacoteMontado == NULL){
+                pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
+            }
+        }
         // printf ("marcador:%u\n",pacoteMontado->m_inicio);
         // printf ("tam:%u\n",pacoteMontado->tam);
         // printf ("seq:%u\n",pacoteMontado->seq);
@@ -337,6 +352,12 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         //printf ("conteudo %s\n",pacoteMontado->dados);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
+        int crc = codigo_crc(pacote_recebido);
+        if (crc != pacoteMontado->crc){
+            struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,pacoteMontado,mensagens);
+            enviar_pacote(socket,0,enviar,mensagens);
+            return NULL;
+        }
         //printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
         //IF CRC aqui eu calcularia o crc para ver se chegou certo, se não eu mando um NACK
         return pacoteMontado;

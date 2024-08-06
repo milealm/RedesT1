@@ -5,7 +5,7 @@
 
 long long timestamp();
 
-int codigo_crc(char *dadosArquivo, int bytesLidos);
+int codigo_crc(unsigned char*);
 
 void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<struct kermit*>& mensagens);
 
