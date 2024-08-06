@@ -236,6 +236,7 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
+    printf ("status %ld\n",status);
     if (status == (-1)){
         perror("Erro ao anviar pacote\n");
         exit (-1);
