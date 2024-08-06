@@ -39,7 +39,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             if (result == TIPO_NACK || (pacote == NULL && volta > 0)){ //envio de novo se receber nack ou se não receber a mensagem
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
-                            printf ("Enviando Mostra!\n");
+                            printf ("Enviando Mostra! decide-%d\n",decide);
                             struct kermit *enviar = montar_pacote(TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens);
                             enviar_pacote(socket,lengthAsInt,enviar,mensagens);
                             struct kermit *pacoteMontado = NULL;
@@ -89,10 +89,11 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //envia um ack, agora vou printar oq eu recebi
     //quando eu colocar os times eu testo o nack
+    std::list <struct kermit *> mostras;
+    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
+    enviar_pacote(socket,0,enviar,mensagens);
     int status = pacote->type;
     if (status != TIPO_FIM){
-        struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
-        enviar_pacote(socket,0,enviar,mensagens);
         printf ("enviei o ack!\n");
         printf ("Nome: %s \n",pacote->dados);
         int decide = 0;
@@ -102,13 +103,19 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
         while (pacote == NULL){
             printf ("esperando...\n");
             pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //aqui eu só espero
-            if (pacoteMontado->seq == pacote->seq){
-                enviar = montar_pacote(TIPO_ACK,0,NULL,pacoteMontado,mensagens); //
+        }
+        if (pacoteMontado->type == TIPO_MOSTRA){
+            if (mostras.back()->seq < pacoteMontado->seq){
+                mostras.push_back(pacoteMontado);
+                enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
                 enviar_pacote(socket,0,enviar,mensagens);
-                pacoteMontado==NULL;
             }
         }
-        status = process_resposta(socket,pacoteMontado,decide,mensagens,janela); //vou chamar outro mostra
+    }
+    for (struct kermit *elemento : mostras){
+        if (elemento != NULL){
+            printf ("Nome: %s",(char*)elemento->dados);
+        }
     }
 }
 
