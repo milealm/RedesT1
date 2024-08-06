@@ -56,11 +56,11 @@ int main(int argc, char *argv[]){
                     }
                     break;
                 case 2:
-                    char nomeArquivo[63];
-                    unsigned int bytesLidos = 13;
+                    char nomeArquivo[64];
+                    unsigned int bytesLidos = 0;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
-                    strcpy(nomeArquivo,"suspeito.mp4");
-                    //scanf("%s%n",nomeArquivo,&bytesLidos);
+                    //strcpy(nomeArquivo,"suspeito.mp4");
+                    scanf("%s%n",nomeArquivo,&bytesLidos);
                     enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                     enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
                     while (sair != FIM_TIMEOUT && sair != TIPO_FIM){
