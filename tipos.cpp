@@ -152,12 +152,10 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
 }
 
 int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
-    printf ("Dados totais:%d\n",bytesLidos);
     std::list <struct kermit *> janela;
     unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
     unsigned int resto = bytesLidos % 64;
     struct kermit *anterior = NULL;
-    printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[31];
     char dadosExtrabyte[63];
@@ -169,23 +167,18 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
             break;
         }else{
 
-            printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,i);
             i = i + 32;
             file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
-            //printf ("-- %s --\n",dadosArquivo);
             int arqLidoInt = static_cast<int>(arqLido);
             int i = 0;
             int j = 0;
             while(i < 64){
                 dadosExtrabyte[i] = dadosArquivo[j];
                 dadosExtrabyte[i+1] = 0xFF;
-                //printf ("j %d\n",j);
                 i+=2;
                 j++;
             }
-            // Converter para int se necessário
-            //printf ("arqLidoInt %ld\n",arqLido);
             if (!mensagens.empty()){
                 anterior = mensagens.back();
             }
