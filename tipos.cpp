@@ -89,42 +89,19 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //envia um ack, agora vou printar oq eu recebi
     //quando eu colocar os times eu testo o nack
-    std::list <struct kermit *> mostras;
-    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
+    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
-    int status = pacote->type;
-    struct kermit *pacoteMontado = NULL;
-    while (pacoteMontado == NULL || pacoteMontado->type != TIPO_FIM){
-        printf ("enviei o ack!\n");
-        //printf ("Nome: %s \n",pacote->dados);
-        int decide = 0;
-        int status = 0;
-        int volta = 0;
-        pacoteMontado = NULL;
-        while (pacoteMontado == NULL){
-            printf ("esperando...\n");
-            pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //aqui eu só espero
+    printf ("Nome: %s \n",pacote->dados);
+    int decide = 0;
+    int status = 0;
+    while (status != TIPO_ACK || decide<4){
+        struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //para receber os próximos nomes de arquivo ou um fim de tx
+        status = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
+        if (decide == 4 || status == FIM_TIMEOUT){
+            printf ("Não foi possível receber este pacote\n");
+            break;
         }
-        printf ("saiu\n");
-        if (pacoteMontado->type == TIPO_MOSTRA){
-            if (mostras.empty()){
-                mostras.push_back(pacoteMontado);
-                enviar = montar_pacote(TIPO_ACK,0,NULL,pacoteMontado,mensagens); //
-                enviar_pacote(socket,0,enviar,mensagens);
-            }
-            else {
-                if (mostras.back()->seq < pacoteMontado->seq){
-                    mostras.push_back(pacoteMontado);
-                    enviar = montar_pacote(TIPO_ACK,0,NULL,pacoteMontado,mensagens); //
-                    enviar_pacote(socket,0,enviar,mensagens);
-                }
-            }
-        }
-    }
-    for (struct kermit *elemento : mostras){
-        if (elemento != NULL){
-            printf ("Nome: %s",(char*)elemento->dados);
-        }
+        decide ++;
     }
 }
 

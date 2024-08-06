@@ -45,20 +45,13 @@ int main(int argc, char *argv[]){
                     printf ("\n\n\n\nVamos listar!\n\n");
                     enviar = montar_pacote(TIPO_LIST,0,NULL,anterior,mensagens);
                     enviar_pacote(socketClient,0,enviar,mensagens);
-                    while (sair != TIPO_FIM){
+                    while (sair != 3){
                         struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
                         sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
-                        if (sair == TIPO_NACK || pacote == NULL){ //deu timeout ou é só um nack
-                            if (decide == 4){
-                                printf ("ai tbm já é demais\n");
-                                break;
-                            }
-                            else {
-                                printf ("Ixi? Vou mandar de novo!\n");
-                                mensagens.pop_back(); //evitar tem mensagem repetida
-                                enviar_pacote(socketClient,0,enviar,mensagens);
-                                decide++;
-                            }
+                        if (sair == TIPO_NACK){ //deu timeout ou é só um nack
+                            printf ("Ixi? Vou mandar de novo!\n");
+                            enviar_pacote(socketClient,0,enviar,mensagens);
+                            decide++;
                         }
                     }
                     break;
