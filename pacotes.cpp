@@ -10,7 +10,7 @@ long long timestamp() {
 
 int codigo_crc(unsigned char *buffer){
     unsigned char crc = 0; // Inicializa o CRC
-    for (int i = 0; i <= PACOTE_MAX; i++) {
+    for (int i = 0; i < PACOTE_MAX; i++) {
         crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
         for (int j = 0; j < 8; j++) { // Processar cada bit
@@ -234,7 +234,7 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
     printf ("pacote que enviei: ");
-    print_buffer(buffer,PACOTE_MAX+1);
+    print_buffer(buffer,PACOTE_MAX);
     printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d pacote->crc %d (%d)\n",pacote->m_inicio,pacote->tam,pacote->seq,pacote->crc,buffer[PACOTE_MAX]);
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
