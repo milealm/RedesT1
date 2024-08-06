@@ -48,6 +48,7 @@ int main(int argc, char *argv[]){
                     while (sair != TIPO_FIM){
                         struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
                         sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
+                        printf ("sair %d\n",sair);
                         if (sair == TIPO_NACK){ //deu timeout ou é só um nack
                             printf ("Ixi? Vou mandar de novo!\n");
                             enviar_pacote(socketClient,0,enviar,mensagens);
@@ -71,6 +72,7 @@ int main(int argc, char *argv[]){
                         break;
                     }
                     else{
+                        printf ("meudeus...");
                         //scanf("%s%n",nomeArquivo,&bytesLidos);
                         enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                         enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
