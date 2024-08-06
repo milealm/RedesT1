@@ -153,7 +153,6 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
 }
 
 int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
-    printf ("Dados totais:%d ",bytesLidos);
     std::list <struct kermit *> janela;
     unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
     unsigned int resto = bytesLidos % 64;
@@ -165,14 +164,14 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
     struct kermit *elementoJan = NULL;
     int f = 0;
     int statusTIMEOUT=0;
-    while (!file.eof()){
+    while (file.read(dadosArquivo,sizeof(dadosArquivo))){
         if (statusTIMEOUT < 0){
             break;
         }else{
-
+            printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,f);
             f = f + 32;
             printf (" %d\n",f);
-            file.read(dadosArquivo,sizeof(dadosArquivo));
+            //file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
             int arqLidoInt = static_cast<int>(arqLido);
             int i = 0;
@@ -199,6 +198,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
                         if (!mensagens.empty()){
                             anterior = mensagens.back();
                         }
+                        printf ("enviar ultimo\n");
                         elementoJan = montar_pacote(TIPO_FIM,0,NULL,anterior,mensagens);
                         janela.push_back(elementoJan);
                     }
