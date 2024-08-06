@@ -122,7 +122,7 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
             printf ("pacote->type %d\n",pacote->type);
         }
         demora++;
-        if (demora > 2){
+        if (demora > 1){
             printf ("vou reenviar\n");
             for (struct kermit *elemento :janela){
                 if (elemento != NULL){
@@ -133,8 +133,8 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
             demora = 0;
         }
     }
-    int result = process_resposta(socket,pacote,demora,mensagens,janela);
-    printf ("result %d\n",result);
+    //int result = process_resposta(socket,pacote,demora,mensagens,janela);
+    //printf ("result %d\n",result);
     if (pacote != NULL){
         if (pacote->type == TIPO_ACK){
             printf ("recebi um ack!\n");
@@ -275,3 +275,59 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     free(str1);
 }
 
+void descreverType (int socket, struct kermit *pacote,std::list<struct kermit*>&mensagens,std::list <struct kermit*>&janela){
+    std::list <struct kermit*> janelaClient;
+    int demora = 0;
+    int numJanela = 0;
+    struct kermit *pacoteJanela;
+    struct kermit *enviar;
+
+    janelaClient.clear();
+    pacoteJanela = NULL;
+    while(pacoteJanela == NULL){
+        pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
+    }
+    janelaClient.push_back(pacoteJanela);
+    numJanela++;
+    demora = 0;
+    while (numJanela < 5){
+        while ((janelaClient.size() < 5 && pacoteJanela->type != TIPO_FIM)){
+            pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
+            while(pacoteJanela == NULL){
+                printf ("esperando..%d\n",demora);
+                pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
+                demora++;
+            }
+            printf ("num seq %d\n",pacoteJanela->seq);
+            if (!janelaClient.empty()){
+                printf ("janela front seq %d e pacoteRecebido %d e demora %d\n",janelaClient.back()->seq, pacoteJanela->seq,demora);
+                if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
+                    printf ("limpa limpa tudo\n");
+                    janelaClient.clear();
+                    printf ("aqui?\n");
+                }
+            }
+            if (demora <= 1){
+                printf ("coloca na janela\n");
+                janelaClient.push_back(pacoteJanela);
+            }
+            numJanela++;
+            demora = 0;
+        }
+        //janelaClient.push_back(pacoteJanela);
+        numJanela++;
+        if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
+            //printf("sera ack ou nack?\n");
+            verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
+            //printf ("antes\n");
+            if (pacoteJanela->type == TIPO_FIM){
+                numJanela = 6;
+            }
+            else{
+                numJanela = 0;
+                //printf ("aqui\n");
+            }
+        }
+        //printf ("proximo\n");
+    }
+}

@@ -8,14 +8,21 @@ long long timestamp() {
     return tp.tv_sec*1000 + tp.tv_usec/1000;
 }
 
-int codigo_crc(char *dadosArquivo, int bytesLidos){
-    // for (int i = 0;i< bytesLidos;i++){
-    //     char byte = dadosArquivo[i];
-    //     for (int j = 7; i>=0;i--){ //indo bit a bit
+int codigo_crc(unsigned char *buffer){
+    unsigned char crc = 0; // Inicializa o CRC
+    for (int i = 0; i < PACOTE_MAX; i++) {
+        crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
-    //     }
-    // }
-    return 0;
+        for (int j = 0; j < 8; j++) { // Processar cada bit
+            if (crc & 0x80) { // Se o bit mais significativo for 1
+                crc = (crc << 1) ^ 0x9B; // Desloca à esquerda e aplica o polinômio
+            } else {
+                crc <<= 1; // Apenas desloca à esquerda
+            }
+        }
+    }
+    printf ("crc %d\n",crc);    
+    return crc; // Retorna o CRC calculados
 }
 
 void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -80,30 +87,16 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 }
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
-    //printf ("recebi algo! vamos processar!!\n");
-    std::list <struct kermit*> janelaClient;
+    printf ("recebi algo! vamos processar!!\n");
+    if (pacote == NULL){
+        return TIPO_NACK;
+    }
     if (pacote == NULL && decide == 4){
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
-    }
-    else if (pacote == NULL && decide < 4){
-        printf ("não chegou ainda, vou enviar um nack\n");
-        return TIPO_NACK; //nack
-    }
-    else if (pacote->m_inicio == 0){
-        return -1; //sorrie e acene, continue ouvindo
-    }
-    else if (pacote->m_inicio != 126){ //colocar um OU com o calculo do crc
-        printf("aqui?");
-        struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,NULL,mensagens);
-        enviar_pacote(socket,0,enviar,mensagens);//tem que resolver o numero de sequencia
-        return TIPO_NACK;
-        //função para colocar na parte de dados o tipo de erro que deu para imprimir
     }
     else{
         struct kermit *enviar;
         int demora = 0;
-        int numJanela = 0;
-        struct kermit *pacoteJanela;
         switch (pacote->type){
             case TIPO_ACK:
 
@@ -168,54 +161,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 enviar_pacote(socket,0,enviar,mensagens);
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
                 //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
-                janelaClient.clear();
-                pacoteJanela = NULL;
-                while(pacoteJanela == NULL){
-                    pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                }
-                janelaClient.push_back(pacoteJanela);
-                numJanela++;
-                demora = 0;
-                while (numJanela < 5){
-                    while ((janelaClient.size() < 5 && pacoteJanela->type != TIPO_FIM)){
-                        pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                        while(pacoteJanela == NULL){
-                            printf ("esperando..%d\n",demora);
-                            pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                            demora++;
-                        }
-                        printf ("num seq %d\n",pacoteJanela->seq);
-                        if (!janelaClient.empty()){
-                            printf ("janela front seq %d e pacoteRecebido %d e demora %d\n",janelaClient.back()->seq, pacoteJanela->seq,demora);
-                            if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
-                                printf ("limpa limpa tudo\n");
-                                janelaClient.clear();
-                                printf ("aqui?\n");
-                            }
-                        }
-                        if (demora <= 1){
-                            printf ("coloca na janela\n");
-                            janelaClient.push_back(pacoteJanela);
-                        }
-                        numJanela++;
-                        demora = 0;
-                    }
-                    //janelaClient.push_back(pacoteJanela);
-                    numJanela++;
-                    if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
-                        //printf("sera ack ou nack?\n");
-                        verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
-                        //printf ("antes\n");
-                        if (pacoteJanela->type == TIPO_FIM){
-                            numJanela = 6;
-                        }
-                        else{
-                            numJanela = 0;
-                            //printf ("aqui\n");
-                        }
-                    }
-                    //printf ("proximo\n");
-                }
+                descreverType(socket,pacote,mensagens,janela);
                 printf ("acabou! da pra abrir o player eu acho k\n");
                 return TIPO_FIM;
                 break;
@@ -236,10 +182,10 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 break;
         }
     }
-    return TIPO_NACK; //alguma coisa muito louca de errado
+    return TIPO_NACK;
 }
 
-struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struct kermit *anterior, std::list<struct kermit *>&mensagens){
+struct kermit *montar_pacote(int tipo,int bytesLidos,char *dadosArquivo,struct kermit*anterior,std::list<struct kermit *> &mensagens){
     unsigned char buffer[PACOTE_MAX] = {0}; //64 + 4 bytes dos outros campso do frame (8 + 6 + 5 + 5 bits = 3 bytes)
     struct kermit *pacote = new struct kermit; //aloquei estrutura onde eu vou guardar o meu pacote
     //marcador de início
@@ -248,7 +194,7 @@ struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struc
     pacote->tam = bytesLidos;
     //num de sequencia
     if (anterior){
-        if (tipo != TIPO_ACK && tipo!=TIPO_NACK){
+        if ((tipo != TIPO_ACK) && (tipo!=TIPO_NACK)){
             if (anterior->seq != 31){
                 pacote->seq = anterior->seq+1;
             }
@@ -266,11 +212,11 @@ struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struc
     //tipo da mensagem
     pacote->type = tipo;
     //dados
-    if (dadosArquivo){
+    if (dadosArquivo!= NULL){
         memcpy(pacote->dados, dadosArquivo, bytesLidos);
     }
     //crc INCOMPLETO
-    pacote->crc = 8;
+    pacote->crc = 0;
     return pacote;
 }
 
@@ -282,6 +228,8 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
     buffer[PACOTE_MAX-1] = pacote->crc;
+    int crc = codigo_crc(buffer);
+    buffer[PACOTE_MAX-1] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
@@ -293,7 +241,6 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     else{
         //printf ("pacotes: %ld enviados com sucesso!\n",status); //numero de bytes enviados, deve ser o tamanho do buffer (67)
     }
-    //imprimirFilas(mensagens,janela);
 }
 
 struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -307,38 +254,29 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     unsigned int byteShiftado;
     ssize_t bytes_recebidos = 0;
     int timeoutDaVez = 1;
-    //for (int j = 0; j <= demora; j++){
-        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * (demora+1); //exponencial
-    //}
+    for (int j = 0; j <= demora; j++){
+        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * (demora+1); //exponencial, só n é pq demora muito
+    }
     while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos <= 0){
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     }
-    if (timestamp()- comeco > timeoutDaVez){
+    if ((timestamp()- comeco > timeoutDaVez) || (bytes_recebidos < 68)){
         if (demora == 4){
             printf ("Agora já deu, não deu pra enviar e pronto ;-; volte para o início");
-            return NULL;
         }
-        //retorna com indicativo que tem que enviar denovo;
-        //printf ("demorou por demais, vou tentar de novo\n");
-        return NULL;
-    }
-    //printf("byte_recebidos: %ld\n",bytes_recebidos);
-    if (bytes_recebidos < 67){ //menor mensagem, com todos os pacotes, é 4 bytes
-        //printf ("Não eh minha mensagem\n");
-        //não é um dos meus pacotes, então nem faço nada, só volto a escutar;
         return NULL;
     }
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
-        // printf ("marcador:%u\n",pacoteMontado->m_inicio);
-        // printf ("tam:%u\n",pacoteMontado->tam);
-        // printf ("seq:%u\n",pacoteMontado->seq);
-        // printf ("type:%u\n",pacoteMontado->type);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        //printf ("conteudo %s\n",pacoteMontado->dados);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
-        //printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
-        //IF CRC aqui eu calcularia o crc para ver se chegou certo, se não eu mando um NACK
+        int crc = codigo_crc(pacote_recebido);
+        if (crc != pacoteMontado->crc){
+            struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,pacoteMontado,mensagens);
+            enviar_pacote(socket,0,enviar,mensagens);
+            return NULL;
+        }
         return pacoteMontado;
     }    
 }
+

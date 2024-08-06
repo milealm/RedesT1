@@ -14,5 +14,6 @@ void dadosType(int socket,std::ifstream& file, unsigned int bytesLidos,std::list
 
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
 
+void descreverType (int socket, struct kermit *pacote,std::list<struct kermit*>&mensagens,std::list <struct kermit*>&janela);
 
 #endif //tipos.h
