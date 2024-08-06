@@ -223,6 +223,7 @@ struct kermit *montar_pacote(int tipo,int bytesLidos,char *dadosArquivo,struct k
 }
 
 void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<struct kermit*>& mensagens){
+    printf ("estou no enviar\n");
     unsigned char buffer[PACOTE_MAX] = {0};
     memcpy(buffer,pacote,3); //põe os 3 primeiros bytes do pacote no buffer (marcador, tamanho, seq e tipo)
     //dados
