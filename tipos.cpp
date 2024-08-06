@@ -11,7 +11,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
     int result = -1;
     int decide = 0;
     struct kermit *anterior = NULL;
-    char nomeArq[63];
+    char nomeArq[64];
     std::string path = "./Videos"; // Diretório atual, você pode mudar para qualquer caminho desejado
     //try {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
@@ -159,7 +159,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
     //printf ("%d numEnvios\n",numEnvios);
     struct kermit *anterior = NULL;
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
-    char dadosArquivo[32];
+    char dadosArquivo[64];
     char dadosExtrabyte[64];
     struct kermit *elementoJan = NULL;
     int f = 0;
@@ -169,7 +169,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
             break;
         }else{
             printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,f);
-            f = f + 32;
+            f = f + 64;
             printf (" %d\n",f);
             file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
@@ -177,13 +177,13 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
             int i = 0;
             int j = 0;
             print_hex(dadosArquivo,sizeof(dadosArquivo));
-            while(i < 64){
-                dadosExtrabyte[i] = dadosArquivo[j];
-                dadosExtrabyte[i+1] = 0xFF;
-                i+=2;
-                j++;
-                //printf ("j %d\n",j);
-            }
+            // while(i < 64){
+            //     dadosExtrabyte[i] = dadosArquivo[j];
+            //     dadosExtrabyte[i+1] = 0xFF;
+            //     i+=2;
+            //     j++;
+            //     //printf ("j %d\n",j);
+            // }
             i=0;
             if (!mensagens.empty()){
                 anterior = mensagens.back();
@@ -192,7 +192,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
                 if (!janela.empty()){
                     anterior = janela.back();
                 }
-                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 32,dadosExtrabyte,anterior,mensagens);
+                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt,dadosExtrabyte,anterior,mensagens);
                 janela.push_back(elementoJan);
                 if (janela.size() == 5 || file.eof()){
                     if (file.eof()){
@@ -346,13 +346,13 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     char bufferSemExtra[32];
                     int i = 0;
                     int j = 0;
-                    while(i < 64){
-                        bufferSemExtra[i] = buffer[j];
-                        i++;
-                        j+=2;
-                    }
+                    // while(i < 64){
+                    //     bufferSemExtra[i] = buffer[j];
+                    //     i++;
+                    //     j+=2;
+                    // }
                     print_hex(bufferSemExtra, 32);
-                    file.write(bufferSemExtra, elementoJan->tam-32); // Use write para evitar escrever caracteres extras
+                    file.write(buffer, elementoJan->tam); // Use write para evitar escrever caracteres extras
                 }
             }
         }
