@@ -15,7 +15,7 @@ int codigo_crc(unsigned char *buffer){
 
         for (int j = 0; j < 8; j++) { // Processar cada bit
             if (crc & 0x80) { // Se o bit mais significativo for 1
-                crc = (crc << 1) ^ 0x9B; // Desloca à esquerda e aplica o polinômio
+                crc = (crc << 1) ^ 0x7; // Desloca à esquerda e aplica o polinômio
             } else {
                 crc <<= 1; // Apenas desloca à esquerda
             }
