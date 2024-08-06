@@ -234,7 +234,9 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
+    printf ("pacote que enviei: ");
     print_buffer(buffer,PACOTE_MAX+1);
+    printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d \n",pacote->m_inicio,pacote->tam,pacote->seq);
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
         perror("Erro ao anviar pacote\n");
@@ -272,7 +274,9 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         memcpy(pacoteMontado,pacote_recebido,3);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
+        printf ("pacote que recebi:  ");
         print_buffer(pacote_recebido,PACOTE_MAX+1);
+         printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d \n",pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq);
         int crc = codigo_crc(pacote_recebido);
         printf ("crc que recebi %d\n",crc);
         if (crc != pacoteMontado->crc){
