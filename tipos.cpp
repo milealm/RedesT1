@@ -93,13 +93,14 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
     enviar_pacote(socket,0,enviar,mensagens);
     int status = pacote->type;
-    if (status != TIPO_FIM){
+    struct kermit *pacoteMontado = NULL;
+    while (pacoteMontado->type != TIPO_FIM){
         printf ("enviei o ack!\n");
         //printf ("Nome: %s \n",pacote->dados);
         int decide = 0;
         int status = 0;
         int volta = 0;
-        struct kermit *pacoteMontado = NULL;
+        pacoteMontado = NULL;
         while (pacoteMontado == NULL){
             printf ("esperando...\n");
             pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //aqui eu só espero
