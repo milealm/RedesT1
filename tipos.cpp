@@ -15,18 +15,20 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
     std::string path = "./Videos"; // Diretório atual, você pode mudar para qualquer caminho desejado
     //try {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
+            printf ("sera que tem arquivo aqui?\n");
             if (entry.is_regular_file()) {
                 std::filesystem::path filePath = entry.path();
                 std::string extension = filePath.extension().string();
 
                 // Verifica se a extensão é .mp4 ou .avi
-                if (extension == ".mp4" || extension == ".avi") {
+                if (extension == ".mp4" || extension == ".avi" || extension == ".txt") {
                     ++count;
                     std::string fileName = filePath.filename().string();
                     std::size_t length = fileName.length();
                     if (fileName.length() <= sizeof(nomeArq)) {
                         std::strcpy(nomeArq, fileName.c_str());
                         std::size_t length = fileName.length();
+                        printf ("nomeArq %s\n",nomeArq);
                         unsigned int lengthAsInt = static_cast<unsigned int>(length);
                         if (!mensagens.empty()){
                             anterior = mensagens.back();
@@ -35,6 +37,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             if (result == TIPO_NACK){
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
+                            printf ("Enviando Mostra!\n");
                             struct kermit *enviar = montar_pacote(TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens);
                             enviar_pacote(socket,lengthAsInt,enviar,mensagens);
                             struct kermit *pacoteMontado = NULL;
@@ -55,6 +58,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             }
             //espero o ack para mandar o próximo pacote
         }
+        printf ("Por hoje é isso pessoal!\n");
         result = -1;
         decide = 0;
         if (!mensagens.empty()){
@@ -64,6 +68,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             if (result == TIPO_NACK){
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
+            printf ("Enviando Fim!\n");
             enviar = montar_pacote(TIPO_FIM,1,NULL,anterior,mensagens);
             enviar_pacote(socket,1,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
@@ -74,6 +79,10 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             }
             decide++;
         }
+        //vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
+    // } catch (const std::filesystem::filesystem_error& err) {
+        
+    // }
 }
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -96,11 +105,13 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 }
 
 int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> &mensagens){
+    printf ("size janela %ld\n",janela.size());
     struct kermit *pacote = NULL;
     int demora = 0;
     int volta = 0;
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
+            printf (" SEQ: %d \n",elemento->seq);
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
@@ -108,11 +119,15 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
         if (volta <= 1){
             printf ("esperando... %d\n",demora);
             pacote = receber_pacote(socket,demora,mensagens,janela);
+            if (pacote != NULL){
+                printf ("pacote->type %d\n",pacote->type);
+            }
             demora++;
             if (demora > 1){ //mudei para 1
                 printf ("vou reenviar\n");
                 for (struct kermit *elemento :janela){
                     if (elemento != NULL){
+                        printf ("SEQ %d \n",elemento->seq);
                         enviar_pacote(socket,elemento->tam,elemento,mensagens);
                     }
                 }
@@ -126,11 +141,15 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     }
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
+        printf ("result %d\n",result);
         if (pacote != NULL){
             if (pacote->type == TIPO_ACK){
+                printf ("recebi um ack!\n");
                 janela.clear();
+                printf ("janela size:%ld\n",janela.size());
             }
             else if (pacote->type == TIPO_NACK){
+                printf ("recebi um nack\n");
                 int numSequencia = pacote->seq;
                 for (auto it = janela.begin(); it != janela.end(); ) {
                     if ((*it)->seq < numSequencia) {
@@ -155,13 +174,15 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
 }
 
 int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
+    printf ("Dados totais:%d\n",bytesLidos);
     std::list <struct kermit *> janela;
     unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
     unsigned int resto = bytesLidos % 64;
     struct kermit *anterior = NULL;
+    printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
-    char dadosArquivo[32];
-    char dadosExtrabyte[64];
+    char dadosArquivo[31];
+    char dadosExtrabyte[63];
     struct kermit *elementoJan = NULL;
     int i = 0;
     int statusTIMEOUT=0;
@@ -169,6 +190,8 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
         if (statusTIMEOUT < 0){
             break;
         }else{
+
+            printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,i);
             i = i + 32;
             file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
@@ -192,7 +215,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
                 if (!janela.empty()){
                     anterior = janela.back();
                 }
-                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 32,dadosExtrabyte,anterior,mensagens);
+                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 31,dadosExtrabyte,anterior,mensagens);
                 janela.push_back(elementoJan);
                 if (janela.size() == 5 || file.eof()){
                     if (file.eof()){
