@@ -121,6 +121,7 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
             break;
         }
     }
+    printf("\033[H\033[J");
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
         if (pacote != NULL){
@@ -279,6 +280,7 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
     while (numJanela < 5){
         while ((janelaClient.size() < 5 && pacoteJanela->type != TIPO_FIM)){
             pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
+            printf ("...\n");
             while(pacoteJanela == NULL){
                 printf ("esperando..%d\n",demora);
                 pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
@@ -289,6 +291,7 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
                 }
 
             }
+            printf("\033[H\033[J");
             if (!janelaClient.empty()){
                 if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
                     janelaClient.clear();

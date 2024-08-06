@@ -66,7 +66,6 @@ int main(int argc, char *argv[]){
                     strcpy(str1,"./");
                     strcat(str1, nomeArquivo);
                     std::string filePath = str1; // Caminho completo ou relativo do arquivo
-                    printf ("filepath:%s\n",str1);
                     std::ifstream file(filePath); // Abrir arquivo para leitura
                     if (file.is_open()) {
                         printf ("Arquivo já baixado! Voltando ao menu...\n");
