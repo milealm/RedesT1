@@ -182,8 +182,8 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
     struct kermit *anterior = NULL;
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
-    char dadosArquivo[31];
-    char dadosExtrabyte[63];
+    char dadosArquivo[32];
+    char dadosExtrabyte[64];
     struct kermit *elementoJan = NULL;
     int i = 0;
     int statusTIMEOUT=0;
@@ -216,7 +216,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
                 if (!janela.empty()){
                     anterior = janela.back();
                 }
-                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 31,dadosExtrabyte,anterior,mensagens);
+                elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 32,dadosExtrabyte,anterior,mensagens);
                 janela.push_back(elementoJan);
                 if (janela.size() == 5 || file.eof()){
                     if (file.eof()){
