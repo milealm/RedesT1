@@ -265,7 +265,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     }
     printf ("bytes recebidos %ld",bytes_recebidos);
-    if ((timestamp()- comeco > timeoutDaVez) || (bytes_recebidos < 67)){
+    if ((timestamp()- comeco > timeoutDaVez) || (bytes_recebidos < 66)){
         if (demora == 4){
             printf ("Agora já deu, não deu pra enviar e pronto ;-; volte para o início");
         }
