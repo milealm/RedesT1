@@ -121,7 +121,7 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
             break;
         }
     }
-    printf("\033[H\033[J");
+    //printf("\033[H\033[J");
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
         if (pacote != NULL){
