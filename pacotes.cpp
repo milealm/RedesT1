@@ -64,44 +64,6 @@ void abrir_video (struct kermit *pacote, int tamanho){
     printf ("voltando ao menu...\n");
 }
 
-void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela){
-    struct kermit *elementoJan;
-    while (!janelaClient.empty()){
-        elementoJan = janelaClient.front();
-        janelaClient.pop_front(); 
-        if (elementoJan->m_inicio != 126){ //incluir checagem crc
-            struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,elementoJan,mensagens);
-            enviar_pacote(socket,0,enviar,mensagens);
-        }
-        else {
-            if (elementoJan->type != TIPO_FIM && elementoJan->type == TIPO_DADOS){
-                std::fstream file;
-                file.open(nomeArquivo, std::ios::out | std::ios::app);
-                if (!file){
-                    printf ("falha ao abrir arquivo\n");
-                    exit (1);
-                }
-                else{
-                    char buffer[64];
-                    memcpy(buffer, elementoJan->dados,64);
-                    char bufferSemExtra[32];
-                    int i = 0;
-                    int j = 0;
-                    while(i < 64){
-                        bufferSemExtra[i] = buffer[j];
-                        i++;
-                        j+=2;
-                    }
-                    file.write(bufferSemExtra, elementoJan->tam-32); // Use write para evitar escrever caracteres extras
-                }
-            }
-        }
-    }
-    janela.clear();
-    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,elementoJan,mensagens);
-    enviar_pacote(socket,0,enviar,mensagens);
-}
-
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     if (pacote == NULL && decide == 4){
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;

@@ -164,18 +164,19 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
     struct kermit *elementoJan = NULL;
     int f = 0;
     int statusTIMEOUT=0;
-    while (file.read(dadosArquivo,sizeof(dadosArquivo))){
+    while (!file.eof()){
         if (statusTIMEOUT < 0){
             break;
         }else{
             printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,f);
             f = f + 32;
             printf (" %d\n",f);
-            //file.read(dadosArquivo,sizeof(dadosArquivo));
+            file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
             int arqLidoInt = static_cast<int>(arqLido);
             int i = 0;
             int j = 0;
+            print_hex(dadosArquivo,sizeof(dadosArquivo));
             while(i < 64){
                 dadosExtrabyte[i] = dadosArquivo[j];
                 dadosExtrabyte[i+1] = 0xFF;
@@ -321,5 +322,58 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
     }
     return 0;
 }
+
+void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela){
+    struct kermit *elementoJan;
+    while (!janelaClient.empty()){
+        elementoJan = janelaClient.front();
+        janelaClient.pop_front(); 
+        if (elementoJan->m_inicio != 126){ //incluir checagem crc
+            struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,elementoJan,mensagens);
+            enviar_pacote(socket,0,enviar,mensagens);
+        }
+        else {
+            if (elementoJan->type != TIPO_FIM && elementoJan->type == TIPO_DADOS){
+                std::fstream file;
+                file.open(nomeArquivo, std::ios::out | std::ios::app);
+                if (!file){
+                    printf ("falha ao abrir arquivo\n");
+                    exit (1);
+                }
+                else{
+                    char buffer[64];
+                    memcpy(buffer, elementoJan->dados,64);
+                    char bufferSemExtra[32];
+                    int i = 0;
+                    int j = 0;
+                    while(i < 64){
+                        bufferSemExtra[i] = buffer[j];
+                        i++;
+                        j+=2;
+                    }
+                    print_hex(bufferSemExtra, 32);
+                    file.write(bufferSemExtra, elementoJan->tam-32); // Use write para evitar escrever caracteres extras
+                }
+            }
+        }
+    }
+    janela.clear();
+    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,elementoJan,mensagens);
+    enviar_pacote(socket,0,enviar,mensagens);
+}
+
+
+void print_hex(char* data, int length) {
+    int i;
+    for (i = 0; i < length; i++) {
+        if (i % 8 == 0) {
+            if (i != 0) printf("\n");
+            printf("  ");
+        }
+        printf("%02x ", data[i]);
+    }
+    printf("\n");
+}
+
 
 

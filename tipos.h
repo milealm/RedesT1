@@ -16,4 +16,8 @@ int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mens
 
 int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&mensagens,std::list <struct kermit*>&janela);
 
+void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela);
+
+void print_hex(char* data, int length);
+
 #endif //tipos.h
