@@ -137,6 +137,14 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
 
                 //vou ter que reenviar uma janela ou mensagem //envia uma mensagem de erro TIPO_ERRO
                 printf ("Eu acho que vi um NACK\n");
+                enviar = NULL;
+                while (enviar == NULL){
+                    enviar = receber_pacote(socket,demora,mensagens,janela);
+                }
+                if (enviar->type == TIPO_NOTFOUND){
+                    printf ("Arquivo não econtrado! Voltar ao menu\n");
+                    return TIPO_NOTFOUND;
+                }
                 return TIPO_NACK;
                 break;
 

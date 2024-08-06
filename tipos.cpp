@@ -225,8 +225,8 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
 
 void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
-    struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
-    enviar_pacote(socket,0,enviar,mensagens);
+    struct kermit *enviar;// = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
+    //enviar_pacote(socket,0,enviar,mensagens);
     printf ("%s e %d\n",pacote->dados,pacote->tam);
     char *str1 = (char*)malloc(pacote->tam + 9 +1);
     struct kermit *anterior = NULL;
@@ -237,8 +237,13 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     std::ifstream file(filePath); // Abrir arquivo para leitura
     if (!file.is_open()) {
         printf ("Arquivo não encontrado!\n");
+        enviar = montar_pacote(TIPO_NACK,0,NULL,pacote,mensagens);
+        enviar_pacote(socket,0,enviar,mensagens);
+        enviar = montar_pacote(TIPO_NOTFOUND,0,NULL,pacote,mensagens);
     }
     else{
+        struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
+        enviar_pacote(socket,0,enviar,mensagens);
         file.seekg(0, std::ios::end);
         std::streampos pos = file.tellg();
         ssize_t bytesLidos = static_cast<ssize_t>(pos);

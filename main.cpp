@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
                     }
                     break;
                 case 2:
-                    char nomeArquivo[63];
+                    char nomeArquivo[64];
                     unsigned int bytesLidos = 13;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
                     strcpy(nomeArquivo,"suspeito.mp4");
@@ -70,6 +70,11 @@ int main(int argc, char *argv[]){
                             printf ("Ixi? Vou mandar de novo!\n");
                             enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
                             decide++;
+                        }
+                        else {
+                            if (sair == TIPO_NOTFOUND){
+                                break;
+                            }
                         }
                     }
                     break;

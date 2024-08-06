@@ -22,6 +22,7 @@
 
 #define TIPO_ACK 0
 #define TIPO_NACK 1
+#define TIPO_NOTFOUND 2
 #define TIPO_LIST 10
 #define TIPO_BAIXAR 11
 #define TIPO_MOSTRA 16
