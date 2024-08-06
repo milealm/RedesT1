@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
                     }
                     break;
                 case 2:
-                    char nomeArquivo[63];
+                    char nomeArquivo[64];
                     unsigned int bytesLidos = 13;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
                     strcpy(nomeArquivo,"suspeito.mp4");

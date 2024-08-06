@@ -15,7 +15,7 @@
 
 #define FILE_NAME "arquivoEnvio.txt"
 #define MAX_BYTES 64
-#define PACOTE_MAX 67
+#define PACOTE_MAX 68
 #define MARCADOR_DE_INICIO 126
 #define POLINOMIO 0x9B //10011011
 #define TIMEOUT_MILLIS 5000

@@ -12,7 +12,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
     int result = -1;
     int decide = 0;
     struct kermit *anterior = NULL;
-    char nomeArq[63];
+    char nomeArq[64];
     std::string path = "./Videos"; // Diretório atual, você pode mudar para qualquer caminho desejado
     //try {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
@@ -171,8 +171,8 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     struct kermit *anterior = NULL;
     printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
-    char dadosArquivo[31];
-    char dadosExtrabyte[63];
+    char dadosArquivo[32];
+    char dadosExtrabyte[64];
     struct kermit *elementoJan = NULL;
     int i = 0;
     while (!file.eof()){
@@ -200,7 +200,7 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
             if (!janela.empty()){
                 anterior = janela.back();
             }
-            elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 31,dadosExtrabyte,anterior,mensagens);
+            elementoJan = montar_pacote(TIPO_DADOS,arqLidoInt + 32,dadosExtrabyte,anterior,mensagens);
             janela.push_back(elementoJan);
             if (janela.size() == 5 || file.eof()){
                 if (file.eof()){
