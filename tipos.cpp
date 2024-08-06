@@ -240,6 +240,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
         enviar = montar_pacote(TIPO_NACK,0,NULL,pacote,mensagens);
         enviar_pacote(socket,0,enviar,mensagens);
         enviar = montar_pacote(TIPO_NOTFOUND,0,NULL,pacote,mensagens);
+        enviar_pacote(socket,0,enviar,mensagens);
     }
     else{
         struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
