@@ -263,6 +263,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     }
     while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos <= 0){
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
+        printf ("bytes recebidos %d",bytes_recebidos);
     }
     if ((timestamp()- comeco > timeoutDaVez) || (bytes_recebidos < 68)){
         if (demora == 4){
@@ -273,10 +274,10 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
+        pacoteMontado->crc = pacote_recebido[PACOTE_MAX];
         printf ("pacote que recebi:  ");
         print_buffer(pacote_recebido,PACOTE_MAX);
-         printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d \n",pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq);
+         printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d pacote->crc%d\n",pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq,pacoteMontado->crc);
         int crc = codigo_crc(pacote_recebido);
         printf ("crc que recebi %d\n",pacote_recebido[PACOTE_MAX]);
         printf ("crc que calculei %d\n",crc);
