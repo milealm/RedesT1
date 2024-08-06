@@ -57,23 +57,23 @@ int main(int argc, char *argv[]){
                     break;
                 case 2:
                     char nomeArquivo[64];
-                    unsigned int bytesLidos = 13;
+                    unsigned int bytesLidos = 0;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
-                    strcpy(nomeArquivo,"suspeito.mp4");
+                    //strcpy(nomeArquivo,"suspeito.mp4");
 
+                    scanf("%s%n",nomeArquivo,&bytesLidos);
 
                     char str1[bytesLidos+2];
                     strcpy(str1,"./");
                     strcat(str1, nomeArquivo);
                     std::string filePath = str1; // Caminho completo ou relativo do arquivo
-                    printf ("filepath:%s\n",str1);
+                    //printf ("filepath:%s\n",str1);
                     std::ifstream file(filePath); // Abrir arquivo para leitura
                     if (file.is_open()) {
                         printf ("Arquivo já baixado! Voltando ao menu...\n");
                         break;
                     }
                     else{
-                        //scanf("%s%n",nomeArquivo,&bytesLidos);
                         enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                         enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
                         while (sair != FIM_TIMEOUT && sair != TIPO_FIM){
