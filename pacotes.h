@@ -17,8 +17,8 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
 
 void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela);
 
-//void enfileirar (int tipo,int bytesLidos,char *dadosArquivo,struct kermit *anterior,std::list<struct kermit*>&mensagens,std::list<struct kermit*>&janela);
-
 void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela);
+
+void print_buffer(unsigned char* buffer, int length);
 
 #endif //pacotes.h
