@@ -23,4 +23,5 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 
 void abrir_video(struct kermit *pacote, int tamanho); 
 
+
 #endif //pacotes.h

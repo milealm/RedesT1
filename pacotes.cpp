@@ -40,6 +40,8 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
     }
 }
 
+
+
 void abrir_video (struct kermit *pacote, int tamanho){
     char str1 [tamanho+2];
     struct kermit *anterior = NULL;
@@ -48,10 +50,11 @@ void abrir_video (struct kermit *pacote, int tamanho){
     const char* videoPath = str1;
     
     // Comando para abrir o vídeo com VLC
-    std::string command = "mpv " + std::string(videoPath) + " &";
+    char command[256];
+    snprintf(command, sizeof(command), "mpv %s", videoPath);
     
-    // Executa o comando
-    int result = std::system(command.c_str());
+    // Executa o comando de forma síncrona
+    int result = system(command);
     
     if (result != 0) {
         std::cerr << "Erro ao abrir o vídeo." << std::endl;
