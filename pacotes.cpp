@@ -21,7 +21,7 @@ int codigo_crc(unsigned char *buffer){
             }
         }
     }
-    printf ("crc %d\n",crc);    
+    //printf ("crc%d\n",crc);    
     return crc; // Retorna o CRC calculados
 }
 
@@ -229,6 +229,7 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     }
     buffer[PACOTE_MAX-1] = pacote->crc;
     int crc = codigo_crc(buffer);
+    printf ("crc que enviei %d\n",crc);
     buffer[PACOTE_MAX-1] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
@@ -271,7 +272,9 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
         int crc = codigo_crc(pacote_recebido);
+        printf ("crc que recebi %d\n",crc);
         if (crc != pacoteMontado->crc){
+            printf ("crc eh diferente\n");
             struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,pacoteMontado,mensagens);
             enviar_pacote(socket,0,enviar,mensagens);
             return NULL;
