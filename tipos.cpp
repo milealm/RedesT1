@@ -94,13 +94,11 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 }
 
 int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> &mensagens){
-    printf ("size janela %ld\n",janela.size());
     struct kermit *pacote = NULL;
     int demora = 0;
     int volta = 0;
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
-            printf (" SEQ: %d \n",elemento->seq);
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
@@ -108,15 +106,10 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
         if (volta <= 1){
             printf ("esperando... %d\n",demora);
             pacote = receber_pacote(socket,demora,mensagens,janela);
-            if (pacote != NULL){
-                printf ("pacote->type %d\n",pacote->type);
-            }
             demora++;
             if (demora > 1){ //mudei para 1
-                printf ("vou reenviar\n");
                 for (struct kermit *elemento :janela){
                     if (elemento != NULL){
-                        printf ("SEQ %d \n",elemento->seq);
                         enviar_pacote(socket,elemento->tam,elemento,mensagens);
                     }
                 }
@@ -130,15 +123,11 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     }
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
-        printf ("result %d\n",result);
         if (pacote != NULL){
             if (pacote->type == TIPO_ACK){
-                printf ("recebi um ack!\n");
                 janela.clear();
-                printf ("janela size:%ld\n",janela.size());
             }
             else if (pacote->type == TIPO_NACK){
-                printf ("recebi um nack\n");
                 int numSequencia = pacote->seq;
                 for (auto it = janela.begin(); it != janela.end(); ) {
                     if ((*it)->seq < numSequencia) {
