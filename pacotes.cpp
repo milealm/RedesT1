@@ -21,7 +21,7 @@ int codigo_crc(unsigned char *buffer){
             }
         }
     }
-    printf ("crc %d\n",crc);    
+    //printf ("crc %d\n",crc);    
     return crc; // Retorna o CRC calculados
 }
 
@@ -88,11 +88,13 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     printf ("recebi algo! vamos processar!!\n");
-    if (pacote == NULL){
-        return TIPO_NACK;
-    }
     if (pacote == NULL && decide == 4){
+        printf ("acabou\n");
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
+    }
+    if (pacote == NULL){
+        printf ("era null");
+        return TIPO_NACK;
     }
     else{
         struct kermit *enviar;
