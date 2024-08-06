@@ -169,6 +169,7 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
         }else{
 
             i = i + 32;
+            printf ("%d\n",i);
             file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
             int arqLidoInt = static_cast<int>(arqLido);
@@ -291,7 +292,7 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
                 }
 
             }
-            printf("\033[H\033[J");
+            //printf("\033[H\033[J");
             if (!janelaClient.empty()){
                 if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
                     janelaClient.clear();
