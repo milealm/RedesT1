@@ -236,8 +236,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     printf ("filepath:%s\n",str1);
     std::ifstream file(filePath); // Abrir arquivo para leitura
     if (!file.is_open()) {
-        std::cerr << "Arquivo não encontrado!" << std::endl;
-        //enviar nack com erro
+        printf ("Arquivo não encontrado!\n");
     }
     else{
         file.seekg(0, std::ios::end);

@@ -8,14 +8,21 @@ long long timestamp() {
     return tp.tv_sec*1000 + tp.tv_usec/1000;
 }
 
-int codigo_crc(char *dadosArquivo, int bytesLidos){
-    // for (int i = 0;i< bytesLidos;i++){
-    //     char byte = dadosArquivo[i];
-    //     for (int j = 7; i>=0;i--){ //indo bit a bit
+int codigo_crc(unsigned char *buffer){
+    unsigned char crc = 0; // Inicializa o CRC
+    for (int i = 0; i < PACOTE_MAX -1; i++) {
+        crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
-    //     }
-    // }
-    return 0;
+        for (int j = 0; j < 8; j++) { // Processar cada bit
+            if (crc & 0x80) { // Se o bit mais significativo for 1
+                crc = (crc << 1) ^ 0x7; // Desloca à esquerda e aplica o polinômio
+            } else {
+                crc <<= 1; // Apenas desloca à esquerda
+            }
+        }
+    }
+    //printf ("crc %d\n",crc);    
+    return crc; // Retorna o CRC calculados
 }
 
 void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -149,7 +156,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //vou mandar um descritor de arquivo depois de mandar um ACK
                 baixarType(socket,pacote,mensagens,janela);
                 //printf ("voltou?\n");
-                return TIPO_BAIXAR;
+                return TIPO_FIM;
                 break;
 
             case TIPO_MOSTRA:
@@ -270,7 +277,7 @@ struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struc
         memcpy(pacote->dados, dadosArquivo, bytesLidos);
     }
     //crc INCOMPLETO
-    pacote->crc = 8;
+    pacote->crc = 0;
     return pacote;
 }
 
@@ -281,7 +288,8 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->dados != 0){
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
-    buffer[PACOTE_MAX-1] = pacote->crc;
+    int crc = codigo_crc(buffer);
+    buffer[PACOTE_MAX-1] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
@@ -316,7 +324,6 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     if (timestamp()- comeco > timeoutDaVez){
         if (demora == 4){
             printf ("Agora já deu, não deu pra enviar e pronto ;-; volte para o início");
-            return NULL;
         }
         //retorna com indicativo que tem que enviar denovo;
         //printf ("demorou por demais, vou tentar de novo\n");
@@ -336,7 +343,13 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         // printf ("type:%u\n",pacoteMontado->type);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         //printf ("conteudo %s\n",pacoteMontado->dados);
+        int crc = codigo_crc(pacote_recebido);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
+        if (crc != pacoteMontado->crc){
+            struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,pacoteMontado,mensagens);
+            enviar_pacote(socket,0,enviar,mensagens);
+            return NULL;
+        }
         //printf ("crc %u\n",pacote_recebido[PACOTE_MAX-1]);
         //IF CRC aqui eu calcularia o crc para ver se chegou certo, se não eu mando um NACK
         return pacoteMontado;
