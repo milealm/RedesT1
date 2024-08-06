@@ -261,7 +261,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * (demora+1); //exponencial, só n é pq demora muito
     }
     while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos <= 0){
-        bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
+        bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX,0);
     }
     printf ("bytes recebidos %ld",bytes_recebidos);
     if ((timestamp()- comeco > timeoutDaVez) || (bytes_recebidos < 66)){
