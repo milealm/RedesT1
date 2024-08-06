@@ -256,7 +256,7 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
         int result = -1;
         int demora = 0;
         while (result != TIPO_ACK ){
-            if (result == TIPO_NACK){
+            if (result == TIPO_NACK || demora > 1){
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
             printf ("Enviando Descreve!\n");

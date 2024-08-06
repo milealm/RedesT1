@@ -40,6 +40,26 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
     }
 }
 
+void abrir_video (struct kermit *pacote, int tamanho){
+    char str1 [tamanho+2];
+    struct kermit *anterior = NULL;
+    strcpy(str1,"./");
+    strcat(str1, (char*)pacote->dados);
+    const char* videoPath = str1;
+    
+    // Comando para abrir o vídeo com VLC
+    std::string command = "mpv " + std::string(videoPath) + " &";
+    
+    // Executa o comando
+    int result = std::system(command.c_str());
+    
+    if (result != 0) {
+        std::cerr << "Erro ao abrir o vídeo." << std::endl;
+    } else {
+        std::cout << "Vídeo aberto com sucesso." << std::endl;
+    }
+}
+
 void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&janelaClient,std::list <struct kermit*> mensagens, std::list <struct kermit*>janela){
     struct kermit *elementoJan;
     while (!janelaClient.empty()){
@@ -232,6 +252,9 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                     //printf ("proximo\n");
                 }
                 printf ("acabou! da pra abrir o player eu acho k\n");
+
+                abrir_video(pacote,pacote->tam);
+
                 return TIPO_FIM;
                 break;
 
