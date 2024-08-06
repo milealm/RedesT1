@@ -115,52 +115,55 @@ void enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <stru
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
-    while (pacote == NULL){
-        printf ("esperando... %d\n",demora);
-        pacote = receber_pacote(socket,demora,mensagens,janela);
+    int result = 0;
+    while (result != TIPO_NACK){
+        while (pacote == NULL){
+            printf ("esperando... %d\n",demora);
+            pacote = receber_pacote(socket,demora,mensagens,janela);
+            if (pacote != NULL){
+                printf ("pacote->type %d\n",pacote->type);
+            }
+            demora++;
+            if (demora > 2){
+                printf ("vou reenviar\n");
+                for (struct kermit *elemento :janela){
+                    if (elemento != NULL){
+                        printf ("SEQ %d \n",elemento->seq);
+                        enviar_pacote(socket,elemento->tam,elemento,mensagens);
+                    }
+                }
+                demora = 0;
+            }
+        }
+        result = process_resposta(socket,pacote,demora,mensagens,janela);
         if (pacote != NULL){
-            printf ("pacote->type %d\n",pacote->type);
-        }
-        demora++;
-        if (demora > 2){
-            printf ("vou reenviar\n");
-            for (struct kermit *elemento :janela){
-                if (elemento != NULL){
-                    printf ("SEQ %d \n",elemento->seq);
-                    enviar_pacote(socket,elemento->tam,elemento,mensagens);
+            if (pacote->type == TIPO_ACK){
+                printf ("recebi um ack!\n");
+                janela.clear();
+                printf ("janela size:%ld\n",janela.size());
+            }
+            else if (pacote->type == TIPO_NACK || result == 1){
+                printf ("recebi um nack\n");
+                int numSequencia = pacote->seq;
+                // for (auto it = janela.begin(); it != janela.end(); ) {
+                //     if ((*it)->seq < numSequencia) {
+                //         // Remove o elemento da lista e obtém o próximo iterador
+                //         it = janela.erase(it);
+                //     } else {
+                //         ++it;
+                //     }
+                // }
+                for (auto it = mensagens.begin(); it != mensagens.end(); ){
+                    if ((*it)->seq < numSequencia){
+                        it = mensagens.erase(it);
+                    } else {
+                        ++it;
+                    }
                 }
             }
-            demora = 0;
         }
     }
-    int result = process_resposta(socket,pacote,demora,mensagens,janela);
     printf ("result %d\n",result);
-    if (pacote != NULL){
-        if (pacote->type == TIPO_ACK){
-            printf ("recebi um ack!\n");
-            janela.clear();
-            printf ("janela size:%ld\n",janela.size());
-        }
-        else if (pacote->type == TIPO_NACK){
-            printf ("recebi um nack\n");
-            int numSequencia = pacote->seq;
-            for (auto it = janela.begin(); it != janela.end(); ) {
-                if ((*it)->seq < numSequencia) {
-                    // Remove o elemento da lista e obtém o próximo iterador
-                    it = janela.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-            for (auto it = mensagens.begin(); it != mensagens.end(); ){
-                if ((*it)->seq < numSequencia){
-                    it = mensagens.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
 }
 
 void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
