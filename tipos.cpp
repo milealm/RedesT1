@@ -136,7 +136,9 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
                 demora = 0;
             }
         }
-        break;
+        else{
+            break;
+        }
     }
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
@@ -172,7 +174,7 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     return -1;
 }
 
-void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
+int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
     printf ("Dados totais:%d\n",bytesLidos);
     std::list <struct kermit *> janela;
     unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
@@ -231,15 +233,18 @@ void dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<
     }
     if (statusTIMEOUT < 0){
         printf ("Fim do timeout...Impossível fazer a conexão, voltando...");
+        return -1;
     }else{
         printf ("enviei tudo");
+        return 0;
     }
 }
 
-void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
+int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
     struct kermit *enviar;// = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
     //enviar_pacote(socket,0,enviar,mensagens);
+    int dados = 0;
     printf ("%s e %d\n",pacote->dados,pacote->tam);
     char *str1 = (char*)malloc(pacote->tam + 9 +1);
     struct kermit *anterior = NULL;
@@ -286,10 +291,11 @@ void baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
             demora++;
         }
         printf ("e vamos para os dados\n");
-        dadosType(socket,file,bytesLidos,mensagens);
+        dados = dadosType(socket,file,bytesLidos,mensagens);
         file.close();
     }
     printf ("teste\n");
     free(str1);
+    return dados;
 }
 

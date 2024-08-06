@@ -135,6 +135,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
         int demora = 0;
         int numJanela = 0;
         struct kermit *pacoteJanela;
+        int status = 0;
         switch (pacote->type){
             case TIPO_ACK:
 
@@ -186,9 +187,14 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //estou no servidor
                 printf ("Eu acho que vi um BAIXAR\n");
                 //vou mandar um descritor de arquivo depois de mandar um ACK
-                baixarType(socket,pacote,mensagens,janela);
+                status = baixarType(socket,pacote,mensagens,janela);
                 //printf ("voltou?\n");
-                return TIPO_FIM;
+                if (status < 0){
+                    return TIPO_FIM;
+                }
+                else {
+                    return TIPO_FIM;
+                }
                 break;
 
             case TIPO_MOSTRA:
