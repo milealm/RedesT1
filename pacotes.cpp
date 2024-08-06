@@ -200,6 +200,7 @@ struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struc
     if (dadosArquivo){
         memcpy(pacote->dados, dadosArquivo, bytesLidos);
     }
+    print_hex((char*)pacote->dados,64);
     //crc INCOMPLETO
     pacote->crc = 0;
     return pacote;

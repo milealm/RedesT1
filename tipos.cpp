@@ -100,7 +100,7 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
-            print_hex((char*)elemento->dados,sizeof(elemento->dados));
+            //print_hex((char*)elemento->dados,sizeof(elemento->dados));
 
         }
     }
