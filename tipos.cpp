@@ -281,7 +281,6 @@ int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mens
             struct kermit *enviar = montar_pacote(TIPO_DESCREVE,pacote->tam,(char*)pacote->dados,anterior,mensagens); //enviando o nome do pacote
             enviar_pacote(socket,pacote->tam,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,demora,mensagens,janela);
-            printf ("teste\n");
             result = process_resposta(socket,pacoteMontado,demora,mensagens,janela);
             //printf ("ainda aqui? result %d\n",result);
             if (demora == 4 && result == FIM_TIMEOUT){
@@ -294,7 +293,6 @@ int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mens
         dados = dadosType(socket,file,bytesLidos,mensagens);
         file.close();
     }
-    printf ("teste\n");
     free(str1);
     return dados;
 }

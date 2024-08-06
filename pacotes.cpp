@@ -111,8 +111,6 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
 }
 
 int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
-    //printf ("recebi algo! vamos processar!!\n");
-    //std::list <struct kermit*> janelaClient;
     if (pacote == NULL && decide == 4){
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
     }
@@ -133,8 +131,6 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
     else{
         struct kermit *enviar;
         int demora = 0;
-        //int numJanela = 0;
-        //struct kermit *pacoteJanela;
         int status = 0;
         switch (pacote->type){
             case TIPO_ACK:
@@ -189,13 +185,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 //vou mandar um descritor de arquivo depois de mandar um ACK
                 status = baixarType(socket,pacote,mensagens,janela);
                 //printf ("voltou?\n");
-                if (status < 0){
-                    return TIPO_FIM;
-                }
-                else {
-                    return TIPO_FIM;
-                }
-                break;
+                return TIPO_FIM;
 
             case TIPO_MOSTRA:
 
@@ -212,56 +202,6 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
                 enviar = montar_pacote(TIPO_ACK,0,NULL,NULL,mensagens);
                 enviar_pacote(socket,0,enviar,mensagens);
                 printf ("Seu video -%s- começará a ser baixado agora\n",pacote->dados);
-                //nessa função já pode ter um loop no cliente para receber os dados e ir juntando (TIPO_DADOS)
-                // janelaClient.clear();
-                // pacoteJanela = NULL;
-                // while(pacoteJanela == NULL){
-                //     pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                // }
-                // janelaClient.push_back(pacoteJanela);
-                // numJanela++;
-                // demora = 0;
-                // while (numJanela < 5){
-                //     while ((janelaClient.size() < 5 && pacoteJanela->type != TIPO_FIM)){
-                //         pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                //         while(pacoteJanela == NULL){
-                //             printf ("esperando..%d\n",demora);
-                //             pacoteJanela = receber_pacote(socket,demora,mensagens,janela); //tem que fazer o negocio do timeout aqui
-                //             demora++;
-                //         }
-                //         printf ("num seq %d\n",pacoteJanela->seq);
-                //         if (!janelaClient.empty()){
-                //             printf ("janela front seq %d e pacoteRecebido %d e demora %d\n",janelaClient.back()->seq, pacoteJanela->seq,demora);
-                //             if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
-                //                 printf ("limpa limpa tudo\n");
-                //                 janelaClient.clear();
-                //                 printf ("aqui?\n");
-                //             }
-                //         }
-                //         if (demora <= 1){
-                //             printf ("coloca na janela\n");
-                //             janelaClient.push_back(pacoteJanela);
-                //         }
-                //         numJanela++;
-                //         demora = 0;
-                //     }
-                //     //janelaClient.push_back(pacoteJanela);
-                //     numJanela++;
-                //     if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
-                //         //printf("sera ack ou nack?\n");
-                //         verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
-                //         //printf ("antes\n");
-                //         if (pacoteJanela->type == TIPO_FIM){
-                //             numJanela = 6;
-                //         }
-                //         else{
-                //             numJanela = 0;
-                //             //printf ("aqui\n");
-                //         }
-                //     }
-                //     //printf ("proximo\n");
-                // }
-                // printf ("acabou! da pra abrir o player eu acho k\n");
                 status = descreveType(socket,pacote,mensagens,janela);
                 abrir_video(pacote,pacote->tam);
 
