@@ -211,17 +211,13 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
 }
 
 int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
-    //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
-    struct kermit *enviar;// = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
-    //enviar_pacote(socket,0,enviar,mensagens);
+    struct kermit *enviar;
     int dados = 0;
-    printf ("%s e %d\n",pacote->dados,pacote->tam);
     char *str1 = (char*)malloc(pacote->tam + 9 +1);
     struct kermit *anterior = NULL;
     strcpy(str1,"./Videos/");
     strcat(str1, (char*)pacote->dados);
     std::string filePath = str1; // Caminho completo ou relativo do arquivo
-    printf ("filepath:%s\n",str1);
     std::ifstream file(filePath); // Abrir arquivo para leitura
     if (!file.is_open()) {
         printf ("Arquivo não encontrado!\n");
@@ -247,19 +243,16 @@ int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mens
             if (result == TIPO_NACK || demora > 1){
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
-            printf ("Enviando Descreve!\n");
             struct kermit *enviar = montar_pacote(TIPO_DESCREVE,pacote->tam,(char*)pacote->dados,anterior,mensagens); //enviando o nome do pacote
             enviar_pacote(socket,pacote->tam,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,demora,mensagens,janela);
             result = process_resposta(socket,pacoteMontado,demora,mensagens,janela);
-            //printf ("ainda aqui? result %d\n",result);
             if (demora == 4 && result == FIM_TIMEOUT){
                 printf ("Não foi possível receber esta mensagem :(");
                 break;
             }
             demora++;
         }
-        printf ("e vamos para os dados\n");
         dados = dadosType(socket,file,bytesLidos,mensagens);
         file.close();
     }
