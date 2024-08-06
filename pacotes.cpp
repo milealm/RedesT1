@@ -227,9 +227,9 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->dados != 0){
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
-    buffer[PACOTE_MAX] = pacote->crc;
+    buffer[PACOTE_MAX-1] = pacote->crc;
     int crc = codigo_crc(buffer);
-    buffer[PACOTE_MAX] = crc;
+    buffer[PACOTE_MAX-1] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
@@ -274,12 +274,12 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         printf ("ue pq n chegou aqui\n");
         memcpy(pacoteMontado,pacote_recebido,3);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        pacoteMontado->crc = pacote_recebido[PACOTE_MAX];
+        pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
         printf ("pacote que recebi:  ");
         print_buffer(pacote_recebido,PACOTE_MAX);
          printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d pacote->crc%d\n",pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq,pacoteMontado->crc);
         int crc = codigo_crc(pacote_recebido);
-        printf ("crc que recebi %d e para confirmar %d\n",pacote_recebido[PACOTE_MAX],pacoteMontado->crc);
+        printf ("crc que recebi %d e para confirmar %d\n",pacote_recebido[PACOTE_MAX-1],pacoteMontado->crc);
         printf ("crc que calculei %d\n",crc);
         if (crc != pacoteMontado->crc){
             printf ("crc eh diferente\n");
