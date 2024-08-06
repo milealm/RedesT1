@@ -11,6 +11,7 @@ long long timestamp() {
 int codigo_crc(unsigned char *buffer){
     unsigned char crc = 0; // Inicializa o CRC
     for (int i = 0; i < PACOTE_MAX; i++) {
+        printf ("byte %d\n",i);
         crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
         for (int j = 0; j < 8; j++) { // Processar cada bit
