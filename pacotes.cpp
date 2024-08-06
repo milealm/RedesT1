@@ -339,12 +339,14 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
         if (pacoteMontado->m_inicio != 126){
+            printf ("aqui\n");
             pacoteMontado == NULL;
             int decide = 0;
             while (pacoteMontado == NULL){
                 pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
             }
         }
+        printf ("saiu\n");
         // printf ("marcador:%u\n",pacoteMontado->m_inicio);
         // printf ("tam:%u\n",pacoteMontado->tam);
         // printf ("seq:%u\n",pacoteMontado->seq);
