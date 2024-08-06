@@ -20,7 +20,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                 std::string extension = filePath.extension().string();
 
                 // Verifica se a extensão é .mp4 ou .avi
-                if (extension == ".mp4" || extension == ".avi") {
+                if (extension == ".mp4" || extension == ".avi" || extension == ".txt") {
                     ++count;
                     std::string fileName = filePath.filename().string();
                     std::size_t length = fileName.length();
