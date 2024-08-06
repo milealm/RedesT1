@@ -93,7 +93,7 @@ int process_resposta(int socket,struct kermit *pacote,int decide,std::list<struc
         return FIM_TIMEOUT; //acabou, não tenta enviar de novo;
     }
     if (pacote == NULL){
-        printf ("era null");
+        printf ("era null\n");
         return TIPO_NACK;
     }
     else{
@@ -257,7 +257,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     ssize_t bytes_recebidos = 0;
     int timeoutDaVez = 1;
     for (int j = 0; j <= demora; j++){
-        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * (demora+1); //exponencial, só n é pq demora muito
+        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * j; //exponencial, só n é pq demora muito
     }
     while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos <= 0){
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
@@ -266,6 +266,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         if (demora == 4){
             printf ("Agora já deu, não deu pra enviar e pronto ;-; volte para o início");
         }
+        printf ("ue, aqui? byte_recebidos %ld\n",bytes_recebidos);
         return NULL;
     }
     else{

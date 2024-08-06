@@ -100,7 +100,11 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
         int volta = 0;
         struct kermit *pacoteMontado = NULL;
         while (pacote == NULL){
+            printf ("esperando...\n");
             pacoteMontado = receber_pacote(socket,decide,mensagens,janela); //aqui eu só espero
+            if (pacoteMontado->seq == pacote->seq){
+                pacoteMontado==NULL;
+            }
         }
         status = process_resposta(socket,pacoteMontado,decide,mensagens,janela); //vou chamar outro mostra
     }
