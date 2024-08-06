@@ -17,10 +17,8 @@ int codigo_crc(unsigned char *buffer){
         for (int j = 0; j < 8; j++) { // Processar cada bit
             if (crc & 0x80) { // Se o bit mais significativo for 1
                 crc = (crc << 1) ^ 0x7; // Desloca à esquerda e aplica o polinômio
-                printf("CRC após deslocar à esquerda e aplicar polinômio: %02X\n", crc);
             } else {
                 crc <<= 1; // Apenas desloca à esquerda
-                 printf("CRC após deslocar à esquerda: %02X\n", crc);
             }
         }
     }
@@ -233,9 +231,6 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     //buffer[PACOTE_MAX-1] = pacote->crc;
     int crc = codigo_crc(buffer);
     buffer[PACOTE_MAX-1] = crc;
-    printf ("ENVIANDO...\n");
-    print_buffer(buffer,PACOTE_MAX);
-    printf ("inicio: %d, tam: %d, seq: %d, crc: %d\n\n", pacote->m_inicio,pacote->tam,pacote->seq, buffer[PACOTE_MAX-1]);
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
@@ -277,9 +272,6 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
         int crc = codigo_crc(pacote_recebido);
-        printf ("RECEBENDO...\n");
-        print_buffer(pacote_recebido,PACOTE_MAX);
-        printf ("inicio: %d, tam: %d, seq: %d, crc: %d e %d, crcCalculado: %d\n\n", pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq,pacoteMontado->crc, pacote_recebido[PACOTE_MAX-1],crc);
         if (crc != pacoteMontado->crc){
             struct kermit *enviar = montar_pacote(TIPO_NACK,0,NULL,pacoteMontado,mensagens);
             enviar_pacote(socket,0,enviar,mensagens);
