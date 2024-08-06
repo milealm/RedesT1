@@ -213,6 +213,7 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->dados != 0){
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
+    print_hex((char*)buffer,PACOTE_MAX);
     int crc = codigo_crc(buffer);
     buffer[PACOTE_MAX-1] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
