@@ -351,7 +351,7 @@ void verifica_janela(int socket,char *nomeArquivo,std::list <struct kermit*>&jan
                     //     i++;
                     //     j+=2;
                     // }
-                    print_hex(bufferSemExtra, 32);
+                    print_hex(buffer, 64);
                     file.write(buffer, elementoJan->tam); // Use write para evitar escrever caracteres extras
                 }
             }
