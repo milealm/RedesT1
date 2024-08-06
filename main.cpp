@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
                     printf ("\n\n\n\nVamos listar!\n\n");
                     enviar = montar_pacote(TIPO_LIST,0,NULL,anterior,mensagens);
                     enviar_pacote(socketClient,0,enviar,mensagens);
-                    while (sair != 3){
+                    while (sair != TIPO_FIM){
                         struct kermit *pacote = receber_pacote(socketClient,decide,mensagens,janela); //receber o primeiro pacote
                         sair = process_resposta(socketClient,pacote,decide,mensagens,janela);
                         if (sair == TIPO_NACK){ //deu timeout ou é só um nack
@@ -59,9 +59,8 @@ int main(int argc, char *argv[]){
                     char nomeArquivo[64];
                     unsigned int bytesLidos = 13;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
-                    strcpy(nomeArquivo,"suspeito.mp4");
-
-
+                    scanf("%s%n",nomeArquivo,&bytesLidos);
+                    //strcpy(nomeArquivo,"suspeito.mp4");
                     char str1[bytesLidos+2];
                     strcpy(str1,"./");
                     strcat(str1, nomeArquivo);
