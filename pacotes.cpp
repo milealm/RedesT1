@@ -201,7 +201,7 @@ struct kermit * montar_pacote(int tipo, int bytesLidos, char*dadosArquivo, struc
         memcpy(pacote->dados, dadosArquivo, bytesLidos);
     }
     //print_hex((char*)pacote->dados,64);
-    printf ("Dado: %s\n",buffer);
+    printf ("Dado: %s\n",pacote->dados);
     //crc INCOMPLETO
     pacote->crc = 0;
     return pacote;
@@ -214,7 +214,7 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->dados != 0){
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
-    print_hex((char*)buffer,PACOTE_MAX);
+    //print_hex((char*)buffer,PACOTE_MAX);
     int crc = codigo_crc(buffer);
     buffer[PACOTE_MAX-1] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
@@ -257,7 +257,7 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     else{
         memcpy(pacoteMontado,pacote_recebido,3);
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
-        printf ("dado: %s\n",pacote_recebido);
+        printf ("dado: %s\n",pacoteMontado->dados);
         int crc = codigo_crc(pacote_recebido);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
         if (crc != pacoteMontado->crc){
