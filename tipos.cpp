@@ -78,7 +78,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
             result = process_resposta(socket,pacoteMontado,decide,mensagens,janela);
             if (decide == 4 || result == FIM_TIMEOUT){
-                printf ("não foi possível receber este pacote\n");
+                printf ("não vou possível receber este pacote\n");
                 break;
             }
             decide++;
@@ -91,7 +91,7 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
     //quando eu colocar os times eu testo o nack
     int status = pacote->type;
     if (status != TIPO_FIM){
-        struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //ack
+        struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
         enviar_pacote(socket,0,enviar,mensagens);
         printf ("enviei o ack!\n");
         printf ("Nome: %s \n",pacote->dados);
