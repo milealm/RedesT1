@@ -10,7 +10,7 @@ long long timestamp() {
 
 int codigo_crc(unsigned char *buffer){
     unsigned char crc = 0; // Inicializa o CRC
-    for (int i = 0; i < PACOTE_MAX; i++) {
+    for (int i = 0; i <= PACOTE_MAX; i++) {
         crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
         for (int j = 0; j < 8; j++) { // Processar cada bit
@@ -227,16 +227,16 @@ void enviar_pacote(int socket,int bytesLidos,struct kermit *pacote,std::list<str
     if (pacote->dados != 0){
         memcpy(buffer+3,pacote->dados,bytesLidos); //coloca os dados no buffer
     }
-    buffer[PACOTE_MAX-1] = pacote->crc;
+    buffer[PACOTE_MAX] = pacote->crc;
     int crc = codigo_crc(buffer);
-    buffer[PACOTE_MAX-1] = crc;
+    buffer[PACOTE_MAX] = crc;
     if (pacote->type!= TIPO_ACK || TIPO_NACK){
         mensagens.push_back(pacote); //coloquei mensagem fila de mensagens
     }
     printf ("pacote que enviei: ");
     print_buffer(buffer,PACOTE_MAX+1);
     printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d \n",pacote->m_inicio,pacote->tam,pacote->seq);
-    printf ("crc que enviei %d\n",crc);
+    printf ("crc que enviei %d\n",buffer[PACOTE_MAX]);
     ssize_t status = send(socket,buffer,sizeof(buffer),0);
     if (status == (-1)){
         perror("Erro ao anviar pacote\n");
@@ -275,10 +275,10 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
         memcpy(pacoteMontado->dados,pacote_recebido+3,pacoteMontado->tam);
         pacoteMontado->crc = pacote_recebido[PACOTE_MAX-1];
         printf ("pacote que recebi:  ");
-        print_buffer(pacote_recebido,PACOTE_MAX+1);
+        print_buffer(pacote_recebido,PACOTE_MAX);
          printf ("pacote->inicio: %d, pacote->tam:%d, pacote->seq:%d \n",pacoteMontado->m_inicio,pacoteMontado->tam,pacoteMontado->seq);
         int crc = codigo_crc(pacote_recebido);
-        printf ("crc que recebi %d\n",pacoteMontado->crc);
+        printf ("crc que recebi %d\n",pacote_recebido[PACOTE_MAX]);
         printf ("crc que calculei %d\n",crc);
         if (crc != pacoteMontado->crc){
             printf ("crc eh diferente\n");
