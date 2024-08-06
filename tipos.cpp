@@ -107,7 +107,7 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
         if (pacoteMontado->type == TIPO_MOSTRA){
             if (mostras.back()->seq < pacoteMontado->seq){
                 mostras.push_back(pacoteMontado);
-                enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens); //
+                enviar = montar_pacote(TIPO_ACK,0,NULL,pacoteMontado,mensagens); //
                 enviar_pacote(socket,0,enviar,mensagens);
             }
         }
