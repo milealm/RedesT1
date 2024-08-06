@@ -5,7 +5,6 @@
 
 void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
     //estou no servidor e recebi um TYPE_LIST, tenho que enviar um ACK
-    printf ("Entendido capitão!\n");
     struct kermit *enviar = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
     enviar_pacote(socket,0,enviar,mensagens);
     int count = 0;
@@ -16,20 +15,18 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
     std::string path = "./Videos"; // Diretório atual, você pode mudar para qualquer caminho desejado
     //try {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
-            printf ("sera que tem arquivo aqui?\n");
             if (entry.is_regular_file()) {
                 std::filesystem::path filePath = entry.path();
                 std::string extension = filePath.extension().string();
 
                 // Verifica se a extensão é .mp4 ou .avi
-                if (extension == ".mp4" || extension == ".avi" || extension == ".txt") {
+                if (extension == ".mp4" || extension == ".avi") {
                     ++count;
                     std::string fileName = filePath.filename().string();
                     std::size_t length = fileName.length();
                     if (fileName.length() <= sizeof(nomeArq)) {
                         std::strcpy(nomeArq, fileName.c_str());
                         std::size_t length = fileName.length();
-                        printf ("nomeArq %s\n",nomeArq);
                         unsigned int lengthAsInt = static_cast<unsigned int>(length);
                         if (!mensagens.empty()){
                             anterior = mensagens.back();
@@ -38,7 +35,6 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                             if (result == TIPO_NACK){
                                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
                             }
-                            printf ("Enviando Mostra!\n");
                             struct kermit *enviar = montar_pacote(TIPO_MOSTRA,lengthAsInt,nomeArq,anterior,mensagens);
                             enviar_pacote(socket,lengthAsInt,enviar,mensagens);
                             struct kermit *pacoteMontado = NULL;
@@ -57,9 +53,7 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
                     }
                 }
             }
-            //espero o ack para mandar o próximo pacote
         }
-        printf ("Por hoje é isso pessoal!\n");
         result = -1;
         decide = 0;
         if (!mensagens.empty()){
@@ -69,7 +63,6 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             if (result == TIPO_NACK){
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
-            printf ("Enviando Fim!\n");
             enviar = montar_pacote(TIPO_FIM,1,NULL,anterior,mensagens);
             enviar_pacote(socket,1,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,decide,mensagens,janela);
@@ -80,10 +73,6 @@ void listType(int socket,struct kermit *pacote,std::list<struct kermit*>& mensag
             }
             decide++;
         }
-        //vou definir que quando o tam é 1, é final do mostra, e 2 é final dos dados
-    // } catch (const std::filesystem::filesystem_error& err) {
-        
-    // }
 }
 
 void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
@@ -106,13 +95,11 @@ void mostraType(int socket, struct kermit *pacote,std::list<struct kermit*>& men
 }
 
 int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struct kermit*> &mensagens){
-    printf ("size janela %ld\n",janela.size());
     struct kermit *pacote = NULL;
     int demora = 0;
     int volta = 0;
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
-            printf (" SEQ: %d \n",elemento->seq);
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
         }
     }
@@ -120,15 +107,10 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
         if (volta <= 1){
             printf ("esperando... %d\n",demora);
             pacote = receber_pacote(socket,demora,mensagens,janela);
-            if (pacote != NULL){
-                printf ("pacote->type %d\n",pacote->type);
-            }
             demora++;
             if (demora > 1){ //mudei para 1
-                printf ("vou reenviar\n");
                 for (struct kermit *elemento :janela){
                     if (elemento != NULL){
-                        printf ("SEQ %d \n",elemento->seq);
                         enviar_pacote(socket,elemento->tam,elemento,mensagens);
                     }
                 }
@@ -142,15 +124,11 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     }
     if (volta <= 1){
         int result = process_resposta(socket,pacote,demora,mensagens,janela);
-        printf ("result %d\n",result);
         if (pacote != NULL){
             if (pacote->type == TIPO_ACK){
-                printf ("recebi um ack!\n");
                 janela.clear();
-                printf ("janela size:%ld\n",janela.size());
             }
             else if (pacote->type == TIPO_NACK){
-                printf ("recebi um nack\n");
                 int numSequencia = pacote->seq;
                 for (auto it = janela.begin(); it != janela.end(); ) {
                     if ((*it)->seq < numSequencia) {
@@ -175,12 +153,10 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
 }
 
 int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<struct kermit*>& mensagens){
-    printf ("Dados totais:%d\n",bytesLidos);
     std::list <struct kermit *> janela;
     unsigned int numEnvios = (bytesLidos + 64 -1) / 64; //arredondar para cima se tiver resto
     unsigned int resto = bytesLidos % 64;
     struct kermit *anterior = NULL;
-    printf ("%d numEnvios\n",numEnvios);
     file.seekg(0,std::ios::beg); //colocar ponteiro na posição 0
     char dadosArquivo[31];
     char dadosExtrabyte[63];
@@ -192,23 +168,19 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
             break;
         }else{
 
-            printf ("Dados Totais: bytes lidos %d - %d -\n",bytesLidos,i);
             i = i + 32;
             file.read(dadosArquivo,sizeof(dadosArquivo));
             std::streamsize arqLido = file.gcount();
-            //printf ("-- %s --\n",dadosArquivo);
             int arqLidoInt = static_cast<int>(arqLido);
             int i = 0;
             int j = 0;
             while(i < 64){
                 dadosExtrabyte[i] = dadosArquivo[j];
                 dadosExtrabyte[i+1] = 0xFF;
-                //printf ("j %d\n",j);
                 i+=2;
                 j++;
             }
             // Converter para int se necessário
-            //printf ("arqLidoInt %ld\n",arqLido);
             if (!mensagens.empty()){
                 anterior = mensagens.back();
             }
@@ -232,20 +204,17 @@ int dadosType(int socket,std::ifstream& file,unsigned int bytesLidos,std::list<s
         }
     }
     if (statusTIMEOUT < 0){
-        printf ("Fim do timeout...Impossível fazer a conexão, voltando...");
+        printf ("Fim do timeout...Impossível fazer a conexão, voltando...\n");
         return -1;
     }else{
-        printf ("enviei tudo");
+        printf ("Arquivo enviado por completo\n");
         return 0;
     }
 }
 
 int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mensagens,std::list<struct kermit*>& janela){
-    //enviei um ack para mostrar que eu entendi, agora vou mandar o descritor
-    struct kermit *enviar;// = montar_pacote(TIPO_ACK,0,NULL,pacote,mensagens);
-    //enviar_pacote(socket,0,enviar,mensagens);
+    struct kermit *enviar;
     int dados = 0;
-    printf ("%s e %d\n",pacote->dados,pacote->tam);
     char *str1 = (char*)malloc(pacote->tam + 9 +1);
     struct kermit *anterior = NULL;
     strcpy(str1,"./Videos/");
@@ -277,19 +246,16 @@ int baixarType(int socket, struct kermit *pacote,std::list<struct kermit*>& mens
             if (result == TIPO_NACK || demora > 1){
                 mensagens.pop_front(); //evitar ter mensagens duplicadas na lista
             }
-            printf ("Enviando Descreve!\n");
             struct kermit *enviar = montar_pacote(TIPO_DESCREVE,pacote->tam,(char*)pacote->dados,anterior,mensagens); //enviando o nome do pacote
             enviar_pacote(socket,pacote->tam,enviar,mensagens);
             struct kermit *pacoteMontado = receber_pacote(socket,demora,mensagens,janela);
             result = process_resposta(socket,pacoteMontado,demora,mensagens,janela);
-            //printf ("ainda aqui? result %d\n",result);
             if (demora == 4 && result == FIM_TIMEOUT){
                 printf ("Não foi possível receber esta mensagem :(");
                 break;
             }
             demora++;
         }
-        printf ("e vamos para os dados\n");
         dados = dadosType(socket,file,bytesLidos,mensagens);
         file.close();
     }
@@ -326,39 +292,28 @@ int descreveType (int socket, struct kermit *pacote, std::list <struct kermit*>&
                 }
 
             }
-            printf ("num seq %d\n",pacoteJanela->seq);
             if (!janelaClient.empty()){
-                printf ("janela front seq %d e pacoteRecebido %d e demora %d\n",janelaClient.back()->seq, pacoteJanela->seq,demora);
                 if (((janelaClient.back()->seq != (pacoteJanela->seq-1)) && ((janelaClient.back()->seq == 31) && (pacoteJanela->seq != 0))) || (demora > 1)){
-                    printf ("limpa limpa tudo\n");
                     janelaClient.clear();
-                    printf ("aqui?\n");
                 }
             }
             if (demora <= 1){
-                printf ("coloca na janela\n");
                 janelaClient.push_back(pacoteJanela);
             }
             numJanela++;
             demora = 0;
         }
-        //janelaClient.push_back(pacoteJanela);
         numJanela++;
         if (janelaClient.size() == 5 || pacoteJanela->type == TIPO_FIM){
-            //printf("sera ack ou nack?\n");
             verifica_janela(socket,(char*)pacote->dados,janelaClient,mensagens,janela);
-            //printf ("antes\n");
             if (pacoteJanela->type == TIPO_FIM){
                 numJanela = 6;
             }
             else{
                 numJanela = 0;
-                //printf ("aqui\n");
             }
         }
-        //printf ("proximo\n");
     }
-    printf ("acabou! da pra abrir o player eu acho k\n");
     return 0;
 }
 
