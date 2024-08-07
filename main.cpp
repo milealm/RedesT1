@@ -91,6 +91,8 @@ int main(int argc, char *argv[]){
                         break;
                     }
             }
+            mensagens.clear();
+            janela.clear();
         }
         close(socketClient);
     }
