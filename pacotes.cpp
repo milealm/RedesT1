@@ -9,7 +9,7 @@ long long timestamp() {
 }
 
 int codigo_crc(unsigned char *buffer){
-    unsigned char crc = 0; // Inicializa o CRC
+    unsigned char crc = 0; // inicia o CRC
     for (int i = 0; i < PACOTE_MAX -1; i++) {
         crc ^= buffer[i]; // XOR o byte atual do buffer com o CRC
 
@@ -21,7 +21,6 @@ int codigo_crc(unsigned char *buffer){
             }
         }
     }
-    //printf ("crc %d\n",crc);    
     return crc; // Retorna o CRC calculados
 }
 
@@ -39,8 +38,6 @@ void imprimirFilas(std::list<struct kermit*>& mensagens,std::list<struct kermit*
         }
     }
 }
-
-
 
 void abrir_video (struct kermit *pacote, int tamanho){
     char str1 [tamanho+2];
@@ -239,9 +236,9 @@ struct kermit *receber_pacote(int socket,int demora,std::list<struct kermit*>& m
     unsigned int byteShiftado;
     ssize_t bytes_recebidos = 0;
     int timeoutDaVez = 1;
-    //for (int j = 0; j <= demora; j++){
-        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * (demora+1); //exponencial
-    //}
+    for (int j = 0; j <= demora; j++){
+        timeoutDaVez = timeoutDaVez * TIMEOUT_MILLIS * j; //exponencial
+    }
     while (timestamp() - comeco <= timeoutDaVez && bytes_recebidos <= 0){
         bytes_recebidos = recv(socket,pacote_recebido, PACOTE_MAX+1,0);
     }

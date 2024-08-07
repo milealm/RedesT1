@@ -21,12 +21,12 @@ int main(int argc, char *argv[]){
         printf ("Você está no servidor\n");
         int decide = 0;
         while (1){
-            printf ("\n\nvoltei para o menu!!\n");
+            printf ("...\n");
             struct kermit *pacote = receber_pacote(socketServer,decide,mensagens,janela); //receber o primeiro pacote
             if (pacote != NULL){
                 int sair = process_resposta(socketServer,pacote,decide,mensagens,janela);
             }
-            //printf("\033[H\033[J");
+            printf("\033[H\033[J");
         }
         close(socketServer);
     }
@@ -42,6 +42,8 @@ int main(int argc, char *argv[]){
             struct kermit *enviar;
             switch (option){
                 case 1:
+                    mensagens.clear();
+                    janela.clear();
                     printf ("\n\n\n\nVamos listar!\n\n");
                     enviar = montar_pacote(TIPO_LIST,0,NULL,anterior,mensagens);
                     enviar_pacote(socketClient,0,enviar,mensagens);
@@ -57,11 +59,12 @@ int main(int argc, char *argv[]){
                     }
                     break;
                 case 2:
+                    mensagens.clear();
+                    janela.clear();
                     char nomeArquivo[64];
                     unsigned int bytesLidos = 13;
                     printf ("Digite o nome do arquivo que gostaria de baixar:");
                     scanf("%s%n",nomeArquivo,&bytesLidos);
-                    //strcpy(nomeArquivo,"suspeito.mp4");
                     char str1[bytesLidos+2];
                     strcpy(str1,"./");
                     strcat(str1, nomeArquivo);
@@ -72,8 +75,6 @@ int main(int argc, char *argv[]){
                         break;
                     }
                     else{
-                        printf ("meudeus...");
-                        //scanf("%s%n",nomeArquivo,&bytesLidos);
                         enviar = montar_pacote(TIPO_BAIXAR,bytesLidos-1,nomeArquivo,anterior,mensagens);
                         enviar_pacote(socketClient,bytesLidos-1,enviar,mensagens);
                         while (sair != FIM_TIMEOUT && sair != TIPO_FIM){
@@ -96,5 +97,6 @@ int main(int argc, char *argv[]){
         }
         close(socketClient);
     }
+    
     return 0;
 }

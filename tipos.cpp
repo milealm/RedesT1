@@ -97,12 +97,16 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
     struct kermit *pacote = NULL;
     int demora = 0;
     int volta = 0;
+    int result = 0;
     for (struct kermit *elemento :janela){
         if (elemento != NULL){
             enviar_pacote(socket,elemento->tam,elemento,mensagens);
             //print_hex((char*)elemento->dados,sizeof(elemento->dados));
 
         }
+    }
+    while (result != TIPO_ACK){
+
     }
     while (pacote == NULL){
         if (volta <= 1){
@@ -122,34 +126,34 @@ int enviar_janela(int socket,std::list <struct kermit *>&janela,std::list <struc
         else{
             break;
         }
-    }
-    //printf("\033[H\033[J");
-    if (volta <= 1){
-        int result = process_resposta(socket,pacote,demora,mensagens,janela);
-        if (pacote != NULL){
-            if (pacote->type == TIPO_ACK){
-                janela.clear();
-            }
-            else if (pacote->type == TIPO_NACK){
-                int numSequencia = pacote->seq;
-                for (auto it = janela.begin(); it != janela.end(); ) {
-                    if ((*it)->seq < numSequencia) {
-                        // Remove o elemento da lista e obtém o próximo iterador
-                        it = janela.erase(it);
-                    } else {
-                        ++it;
+        printf("\033[H\033[J");
+        if (volta <= 1){
+            int result = process_resposta(socket,pacote,demora,mensagens,janela);
+            if (pacote != NULL){
+                if (pacote->type == TIPO_ACK){
+                    janela.clear();
+                }
+                else if (pacote->type == TIPO_NACK){
+                    int numSequencia = pacote->seq;
+                    for (auto it = janela.begin(); it != janela.end(); ) {
+                        if ((*it)->seq < numSequencia) {
+                            // Remove o elemento da lista e obtém o próximo iterador
+                            it = janela.erase(it);
+                        } else {
+                            ++it;
+                        }
+                    }
+                    for (auto it = mensagens.begin(); it != mensagens.end(); ){
+                        if ((*it)->seq < numSequencia){
+                            it = mensagens.erase(it);
+                        } else {
+                            ++it;
+                        }
                     }
                 }
-                for (auto it = mensagens.begin(); it != mensagens.end(); ){
-                    if ((*it)->seq < numSequencia){
-                        it = mensagens.erase(it);
-                    } else {
-                        ++it;
-                    }
-                }
             }
+            return 0;
         }
-        return 0;
     }
     return -1;
 }
